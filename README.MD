@@ -322,3 +322,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### passage.htb
 > app vuln get web shell; applcation folder enum to lateral move , ssh key reuse lateral again; user group and .viminfo point to a software we can lauch to write ssh pub key to root/.ssh/; ssh as root
+
+#### Luanne.htb
+> default credential get in app; Enum for vuln of "Lua Code Injection", this is uncommon, get a http shell; Enum, get a web app credential, and local listening ports; curl with user -u, get a priv key, lateral move as user; check backup file, get another credetnial, which owned by root
