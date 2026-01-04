@@ -325,3 +325,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### Luanne.htb
 > default credential get in app; Enum for vuln of "Lua Code Injection", this is uncommon, get a http shell; Enum, get a web app credential, and local listening ports; curl with user -u, get a priv key, lateral move as user; check backup file, get another credetnial, which owned by root
+
+#### seal.htb
+> port 8080, gitbucket, register a user view all codes and comments codes, get a credential, used to login port 443 tomcat manager page; more enum for tomcat, mutual auth is required by tomcat manger page; google mutual auth bypass, and enter tomcat mgr, deploy reversehll get foothold; check /opt/backups and th script for routine task of backup action, softlink SRC folde of backup to luis(host user), get user ssh key; sudo -l for ES
