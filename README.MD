@@ -321,10 +321,13 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
   gitlab vunl to get user shell; search gitlab config, get root passwd, su to root; notice we root the container, check docker-compose file, has privi :true; mount host disk to container; generate ssh key to root/.ssh, ssh -i 
 
 #### passage.htb
-> app vuln get web shell; applcation folder enum to lateral move , ssh key reuse lateral again; user group and .viminfo point to a software we can lauch to write ssh pub key to root/.ssh/; ssh as root
+ app vuln get web shell; applcation folder enum to lateral move , ssh key reuse lateral again; user group and .viminfo point to a software we can lauch to write ssh pub key to root/.ssh/; ssh as root
 
 #### Luanne.htb
-> default credential get in app; Enum for vuln of "Lua Code Injection", this is uncommon, get a http shell; Enum, get a web app credential, and local listening ports; curl with user -u, get a priv key, lateral move as user; check backup file, get another credetnial, which owned by root
+ default credential get in app; Enum for vuln of "Lua Code Injection", this is uncommon, get a http shell; Enum, get a web app credential, and local listening ports; curl with user -u, get a priv key, lateral move as user; check backup file, get another credetnial, which owned by root
 
 #### seal.htb
-> port 8080, gitbucket, register a user view all codes and comments codes, get a credential, used to login port 443 tomcat manager page; more enum for tomcat, mutual auth is required by tomcat manger page; google mutual auth bypass, and enter tomcat mgr, deploy reversehll get foothold; check /opt/backups and th script for routine task of backup action, softlink SRC folde of backup to luis(host user), get user ssh key; sudo -l for ES
+ port 8080, gitbucket, register a user view all codes and comments codes, get a credential, used to login port 443 tomcat manager page; more enum for tomcat, mutual auth is required by tomcat manger page; google mutual auth bypass, and enter tomcat mgr, deploy reversehll get foothold; check /opt/backups and th script for routine task of backup action, softlink SRC folde of backup to luis(host user), get user ssh key; sudo -l for ES
+
+#### meta.htb.md
+  subdomain fuzz; application of lib/exiftool, upload image with paylaod reverse shell to get foothold; process checking pspy, find a task running a app, who is vuln; exploit vuln move to user; sudo -l, sudoers file with env_keep+=XDG_CONFIG_HOME setting, manipulate by echo exec bash into it
