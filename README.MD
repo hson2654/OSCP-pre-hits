@@ -334,3 +334,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### worker.htb
   svn subversion enum find a hardcoded credential used by user; login the devops platform, create new branch and build it with additional cmd page, connect back to atack host, with user; find W drive, using W:, got new credential of user; back to devops, a project running  by SYSTEM, and user we owned has build privil; buuild it use the intergrited script, connect back kali, get root 
+
+#### intelligence.htb
+  port 80, enum naming stype of pdf files, get default passwd, and user list；use kerbrute to validate user, and check smb files, get user flag, and a ps script; add dns entry to AD,use responsor catch a hash of a user; use bloodhound find a exploit path, ReadGMSAPassword, allowtoDelegate, get domain
