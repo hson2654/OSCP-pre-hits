@@ -187,8 +187,8 @@ William.Lee
 ```             
 write to a file
 
-`└─$ for i in /tmp/*.pdf; do
-exiftool "$i"  | grep Creator | cut -d ':' -f2 | xargs | sort -u >> user
+`└─$ for i in /tmp/*.pdf; do \n
+exiftool "$i"  | grep Creator | cut -d ':' -f2 | xargs | sort -u >> user  \n
 done`
 
 `wc -l user`
