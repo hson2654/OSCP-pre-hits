@@ -337,3 +337,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### intelligence.htb
   port 80, enum naming stype of pdf files, get default passwd, and user list；use kerbrute to validate user, and check smb files, get user flag, and a ps script; add dns entry to AD,use responsor catch a hash of a user; use bloodhound find a exploit path, ReadGMSAPassword, allowtoDelegate, get domain
+
+#### fuse.htb
+  smb,rpc enum, smbpasswd reset, get more credential, one canbe used to remote login; SeLoadDriverPrivilege to es
