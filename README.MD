@@ -342,7 +342,10 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
   smb,rpc enum, smbpasswd reset, get more credential, one canbe used to remote login; SeLoadDriverPrivilege to es
 
 #### scrambled.htb
-  http enum, get a user, and potuantial passwd same as username, NTLM auth is disabled; use this use access SMB, get a pdf file, Network admin group is able to access MSSQL; GetUserSPNs to enum SPN, get ahash of sqlsvc, crack it; enum SID of dimain, and generate NTLM of the new cracked credential, use these to access MSSQL, get another credential; within MSSQL use cmdshell to download nc to target host, and get shell of the previous user; bloodhound view the privi of the previous user, move to the last user and get ashell, and user flag; enum the PE file and dll on share folder, which is used to connect with port 4411, debug the exe on Winx64, get a log file, which is the same format as NC to the port, use ysoserial on win to generate a revershell payload and nc to trigger it, get SyStem shell
+  http enum, get a user, and potuantial passwd same as username, NTLM auth is disabled; use this use access SMB, get a pdf file, Network admin group is able to access MSSQL; GetUserSPNs to enum SPN, get ahash of sqlsvc, crack it; enum SID of dimain, and generate NTLM of the new cracked credential, use these to access MSSQL, get another credential; MSSQL use cmdshell to download nc to target host, and get shell of the previous user; bloodhound view the privi of the previous user, move to the last user and get ashell, and user flag; enum the PE file and dll on share folder, which is used to connect with port 4411, debug the exe on Winx64, get a log file, which is the same format as NC to the port, use ysoserial on win to generate a revershell payload and nc to trigger it, get SyStem shell
 
 #### cap.htb
   http enum, get a username, fuzz the data folder by id, 0 download file valides passwd for this user; ssh to host, linpeas view python with setuid, ES
+
+#### codeparttwo
+  port 8000 running python based JS interprater, with a vuln to RCE, get shell; check the SQL db file, find user credetnial, ssh in host; sudo -l with ALL to a binary file, modify the conf file to run pre command, get a revershell of root
