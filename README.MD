@@ -347,5 +347,8 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 #### cap.htb
   http enum, get a username, fuzz the data folder by id, 0 download file valides passwd for this user; ssh to host, linpeas view python with setuid, ES
 
-#### codeparttwo
+#### codeparttwo.htb
   port 8000 running python based JS interprater, with a vuln to RCE, get shell; check the SQL db file, find user credetnial, ssh in host; sudo -l with ALL to a binary file, modify the conf file to run pre command, get a revershell of root
+
+#### expressway.htb
+  port 500 ike enum to get user credential; sudo version vuln get root
