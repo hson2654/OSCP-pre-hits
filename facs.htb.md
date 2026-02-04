@@ -196,6 +196,11 @@ EOF
 ```
 ```
 trivia@facts:/tmp/facter$ sudo facter --custom-dir=/tmp/facter/ f.rb
-# id
+#id
 uid=0(root) gid=0(root) groups=0(root)
 ```
+
+#### lesson learned
+- vuln is important, new CVE is not collected by exploit-db
+- some vuln not only works on the version showed in descreiption, try some vuln for the applicaiton
+- Aws connection
