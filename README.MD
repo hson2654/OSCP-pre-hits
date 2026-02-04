@@ -352,3 +352,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### expressway.htb
   port 500 ike enum to get user credential; sudo version vuln get root
+
+#### facs.htb
+  vuln of Camalieon ES and system data leakage, view the system files, and get Aws keys; Aws connect Aws bucket get a private key, crack it by john; ssh into host; sudo -l, facter
