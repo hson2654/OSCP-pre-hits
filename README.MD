@@ -355,3 +355,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### facs.htb
   vuln of Camalieon ES and system data leakage, view the system files, and get Aws keys; Aws connect Aws bucket get a private key, crack it by john; ssh into host; sudo -l, facter
+
+#### Converso.htb
+  XSLT injection, write revershell to host, get a shell; sqlite view .db get credential; sudo -l 
