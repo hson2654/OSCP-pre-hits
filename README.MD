@@ -83,7 +83,19 @@ json unsearialize vuln of webapplication, rce; ps -aux to find process is runnin
 #### DerpNStink
   web dirc,wp plugin vuln- get shell; wp-config.php get mysql passwd;mysql get wp-admin login and host account passwd;sudo -l
 #### deveguru
-  .git didrc leakage, gittool to get the git file by git dumper to download and git extractor to restore to normal files; get the db credential; login web server backend; htm file RCE method, wget reverse shell to load it via web browser; searching for abnormal file - backups; get gitea db credential; gitea githook to launch hook shell(system bash shell); sudo -l sqlite3 but without passwd; sudo version , vuln; sudo -u#-1;
+  .git didrc leakage, gittool to get the git file by git dumper to download and git extractor to restore to normal files; get the db credential; login web server backend; htm file RCE method, wget reverse shell to load it via web browser; searching for abnormal filistening on [any] 8821 ...
+connect to [10.10.16.17] from (UNKNOWN) [10.129.231.23] 41744
+Linux soulmate 5.15.0-153-generic #163-Ubuntu SMP Thu Aug 7 16:37:18 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+ 07:16:02 up  4:50,  0 users,  load average: 0.00, 0.00, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+
+www-data@soulmate:/$ cat /etc/passwd | grep bash
+cat /etc/passwd | grep bash
+root:x:0:0:root:/root:/bin/bash
+ben:x:1000:1000:,,,:/home/ben:/bin/bashle - backups; get gitea db credential; gitea githook to launch hook shell(system bash shell); sudo -l sqlite3 but without passwd; sudo version , vuln; sudo -u#-1;
 #### tommyboy
   wp user brute force; photo exiftool to veiw info; hidden port , not always open; fuff to find hidden file on web; crunch to generate word list;fcrackzip to crack zip passwd;wp apperance template fule php reverse shell; find dirc with writable privi;ilovecody112235! 
 
@@ -348,7 +360,19 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
   http enum, get a username, fuzz the data folder by id, 0 download file valides passwd for this user; ssh to host, linpeas view python with setuid, ES
 
 #### codeparttwo.htb
-  port 8000 running python based JS interprater, with a vuln to RCE, get shell; check the SQL db file, find user credetnial, ssh in host; sudo -l with ALL to a binary file, modify the conf file to run pre command, get a revershell of root
+  port 8000 running python based JS interprater, with a vuln to RCE, get shell; check the SQL db file, find user credetnial, ssh in host; sudo -l with ALL to a binary file, modify the conf file to run pre command, get a revershell of rootlistening on [any] 8821 ...
+connect to [10.10.16.17] from (UNKNOWN) [10.129.231.23] 41744
+Linux soulmate 5.15.0-153-generic #163-Ubuntu SMP Thu Aug 7 16:37:18 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+ 07:16:02 up  4:50,  0 users,  load average: 0.00, 0.00, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+
+www-data@soulmate:/$ cat /etc/passwd | grep bash
+cat /etc/passwd | grep bash
+root:x:0:0:root:/root:/bin/bash
+ben:x:1000:1000:,,,:/home/ben:/bin/bash
 
 #### expressway.htb
   port 500 ike enum to get user credential; sudo version vuln get root
@@ -358,3 +382,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### Converso.htb
   XSLT injection, write revershell to host, get a shell; sqlite view .db get credential; sudo -l 
+
+#### soulmate.htb
+  ffuf the subdomain, get ftp, running crushftp has vunl, exploit to add a admin user; with this account to reset passwd for a user who runs the web applicaiton, and add a revershell to the web dir, trigger to get a www-data shell; linpeas find a script with user credential, ssh user; test local port 2222, the applicaiton has vunl, also nc it find os module is used, execute os command to launch revershell by root privi
