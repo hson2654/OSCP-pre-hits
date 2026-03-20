@@ -118,7 +118,7 @@ index 0000000..615e621
 ```
 Got a credetnial, which can be used to login the index login page, which is a page to view the upload. 
 
-Find a poc on github, run the poc can execute command directly. It is based on the vuln below.
+Find a poc(the vuln I indentified previously) on github, run the poc can execute command directly. It is based on the vuln below.
 Set a nc listener to get www-data shell
 ```
 listening on [any] 8821 ...
