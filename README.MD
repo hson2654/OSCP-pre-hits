@@ -375,3 +375,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### cctv.htb
   port 80 service with vuln to sqli, slqmap get a user credential; ssh to host, check listening port, enum the service , get admin and apsswd hash; forfprwarding to local, to visit and get application info and versionl; it is vuln to RCE, get root shell
+
+#### principal.htb
+  port 80 vuln to pub key bypass, use poc to login the servie as admin; find user list and a potential passwd; nxc to spray the user, get user; sshd misconfig, trustCA is set, AuthorizedPrincipalsFile or AuthorizedPrincipalsCommand not set. use ca to sign our own pub key with pricipal as root to ssh in as root.
