@@ -168,7 +168,17 @@ PasswordAuthentication yes
 PermitRootLogin prohibit-password
 TrustedUserCAKeys /opt/principal/ssh/ca.pub
 ```
-in order escalate our privileges we will generate a new SSH key pair, sign the public key with the CA and specify root as the principal
+TrustedUserCAKeys is set but there is no AuthorizedPrincipalsFile or AuthorizedPrincipalsCommand configured.
+```
+SSH falls back to checking if the certificate's principal matches the username being logged in as.
+When AuthorizedPrincipalsFile is set: SSH reads the file for the logging-in user and checks if the certificate's principal matches any line in that file.
+AuthorizedPrincipalsCommand uses script to get pricipal dynamicly.
+
+Issue Certificates: Users generate their own SSH key pairs. Their public keys are sent to the CA, which signs them with its private key to create a time-limited user certificate containing metadata like the username (principal) and an expiration date.
+
+So we can use ca to sign arbitrary pub key and set the pricipal to root same as user name root as we want.
+```
+in order escalate our privileges we will generate a new SSH key pair, sign the public key with the CA and specify root as the principal.
 
 `svc-deploy@principal:/tmp$ ssh-keygen -t ed25519 `
 ```
@@ -204,4 +214,4 @@ root@principal:~# id
 uid=0(root) gid=0(root) groups=0(root)
 ```
 #### lesson learned
-- sshd config 
+- sshd config CA trust, we can view ca, and the AuthorizedPrincipalsFile or AuthorizedPrincipalsCommand not set. we can sign our own pub key to whatever a principal we want, then ssh -i to the target host.
