@@ -378,3 +378,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### principal.htb
   port 80 vuln to pub key bypass, use poc to login the servie as admin; find user list and a potential passwd; nxc to spray the user, get user; sshd misconfig, trustCA is set, AuthorizedPrincipalsFile or AuthorizedPrincipalsCommand not set. use ca to sign our own pub key with pricipal as root to ssh in as root.
+
+#### kobold.htb
+  port 80, 2 subdomains, one of it vuln to RCE, get a user shell, but cannot lateral move or ES; 2nd subdomain, RCE get a shell, inside a container, find a credential, reuse it in port 3552; container management system, mount / of host to /app of the container disk
