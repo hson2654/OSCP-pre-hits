@@ -294,5 +294,98 @@ wpa_state=SCANNING
 p2p_device_address=42:00:00:00:00:00
 address=f0:9f:c2:a3:f1:a7
 uuid=362db47b-a53a-5191-88fb-5458b986b2e4
+consultant@AirTouch-Consultant:~$ sudo wpa_cli -i wlan0
+wpa_cli v2.9
+Copyright (c) 2004-2019, Jouni Malinen <j@w1.fi> and contributors
+
+This software may be distributed under the terms of the BSD license.
+See README for more details.
+
+
+
+Interactive mode
+
+> list_networks 
+network id / ssid / bssid / flags
+0	AirTouch-Internet	any	[CURRENT]
+> select_network 0
+OK
+> status
+bssid=f0:9f:c2:a3:f1:a7
+freq=2437
+ssid=AirTouch-Internet
+id=0
+mode=station
+pairwise_cipher=CCMP
+group_cipher=TKIP
+key_mgmt=WPA2-PSK
+wpa_state=COMPLETED
+p2p_device_address=42:00:00:00:00:00
+address=02:00:00:00:00:00
+uuid=362db47b-a53a-5191-88fb-5458b986b2e4
 
 root@AirTouch-Consultant:~/eaphammer/loot# dhclient wlan0
+
+consultant@AirTouch-Consultant:~$ sudo dhclient wlan0
+consultant@AirTouch-Consultant:~$ ifconfig wlan0
+wlan0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.3.61  netmask 255.255.255.0  broadcast 192.168.3.255
+        inet6 fe80::ff:fe00:0  prefixlen 64  scopeid 0x20<link>
+        ether 02:00:00:00:00:00  txqueuelen 1000  (Ethernet)
+        RX packets 28  bytes 4307 (4.3 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 38  bytes 5052 (5.0 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+consultant@AirTouch-Consultant:~$ nmap -sn 192.168.3.0/24
+Starting Nmap 7.80 ( https://nmap.org ) at 2026-03-30 11:59 UTC
+Nmap scan report for 192.168.3.1
+Host is up (0.0049s latency).
+Nmap scan report for 192.168.3.61
+Host is up (0.00048s latency).
+Nmap done: 256 IP addresses (2 hosts up) scanned in 15.04 seconds
+
+consultant@AirTouch-Consultant:~$ sudo nmap -p- -sSCV 192.168.3.1
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.11 (Ubuntu Linux; protocol 2.0)
+53/tcp open  domain  dnsmasq 2.90
+| dns-nsid: 
+|_  bind.version: dnsmasq-2.90
+80/tcp open  http    Apache httpd 2.4.41 ((Ubuntu))
+| http-cookie-flags: 
+|   /: 
+|     PHPSESSID: 
+|_      httponly flag not set
+|_http-server-header: Apache/2.4.41 (Ubuntu)
+| http-title: WiFi Router Configuration
+|_Requested resource was login.php
+MAC Address: F0:9F:C2:A3:F1:A7 (Ubiquiti Networks)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+└─$ sudo dirsearch -u http://127.0.0.1:8080
+[08:17:22] 200 -  404B  - /login.php
+[08:19:59] 403 -  276B  - /server-status
+[08:19:59] 403 -  276B  - /server-status/
+[08:21:22] 403 -  276B  - /uploads/
+[08:21:22] 301 -  315B  - /uploads  ->  http://127.0.0.1:8080/uploads/
+
+http://127.0.0.1:8080/login.php   PSK Router Login\http://127.0.0.1:8080/uploads/   You don't have permission to access this resource.
+
+
+consultant@AirTouch-Consultant:~$ ps -aux | grep supp
+root        3881  0.0  0.0  13960  3340 ?        Ss   09:03   0:00 wpa_supplicant -B -c /etc/wpa_supplicant/wpa_supplicant.conf -i wlan0
+consult+   29227  0.0  0.0   5188   716 pts/0    S+   12:53   0:00 grep --color=auto supp
+consultant@AirTouch-Consultant:~$ sudo kill 3881
+
+consultant@AirTouch-Consultant:consultant@AirTouch-Consultant:~$ sudo ip link set wlan0 down
+~$ ps -aux | grep dhc
+root       22156  0.0  0.1  99900  5616 ?        Ssl  11:53   0:00 dhclient wlan0
+consult+   29287  0.0  0.0   5188   720 pts/0    S+   12:53   0:00 grep --color=auto dhc
+
+consultant@AirTouch-Consultant:~$ sudo dhclient -r wlan0
+Removed stale PID file
+System has not been booted with systemd as init system (PID 1). Can't operate.
+Failed to connect to bus: Host is down
+
