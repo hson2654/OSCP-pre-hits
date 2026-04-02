@@ -381,3 +381,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### kobold.htb
   port 80, 2 subdomains, one of it vuln to RCE, get a user shell, but cannot lateral move or ES; 2nd subdomain, RCE get a shell, inside a container, find a credential, reuse it in port 3552; container management system, mount / of host to /app of the container disk
+
+#### devarea.htb
+  port 21, get a jar file, got a service; vuln of service running on 8080, FLI the service previous, got a credential for port 8888; vuln RCE of port 8888, get user; /bin/bash is writable, sudo -l to bash hijack get root
