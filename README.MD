@@ -384,3 +384,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### devarea.htb
   port 21, get a jar file, got a service; vuln of service running on 8080, FLI the service previous, got a credential for port 8888; vuln RCE of port 8888, get user; /bin/bash is writable, sudo -l to bash hijack get root
+
+#### 2million
+  port 80, js file, get API info;API Enum register account and set to admin privi; use VPN/generate API to code injection command get shell;kernel vuln to root
