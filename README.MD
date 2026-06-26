@@ -387,3 +387,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### 2million
   port 80, js file, get API info;API Enum register account and set to admin privi; use VPN/generate API to code injection command get shell;kernel vuln to root
+
+#### Pilgrimage.htb
+  .git folder, gittool; hex string to binary , xxd -r -p;
