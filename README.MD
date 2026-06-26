@@ -390,3 +390,6 @@ bloodhound/sharphound in win to get AD info and attack path; add new user in dom
 
 #### Pilgrimage.htb
   .git folder, gittool; hex string to binary , xxd -r -p;
+
+#### keeper.htb
+  .kdbx use kpcli to access; putty user key file, use puttygen the .key file to convert to private-openssh format id_rsa
